@@ -4179,562 +4179,377 @@ const MyEventsPage: React.FC = () => {
           const isPgso = deptName.toLowerCase() === 'pgso' || deptName.toLowerCase().includes('pgso');
 
           if (isPgso) {
-
             const locationReqs = await fetchLocationRequirementsForEvent(addingToEvent);
 
-
-
             if (Array.isArray(locationReqs) && locationReqs.length > 0) {
-
               const basePoolByName = new Map<string, number>();
-
               locationReqs.forEach((lr: any) => {
-
                 const name = lr?.name;
-
                 const qtyRaw = lr?.quantity;
-
                 const qty = typeof qtyRaw === 'number'
-
                   ? qtyRaw
-
                   : typeof qtyRaw === 'string'
-
                     ? parseInt(qtyRaw, 10)
-
                     : 0;
-
-                if (typeof name === 'string' && name.trim().length > 0) {
-                  let finalQty = Number.isFinite(qty) ? qty : 0;
-                  if (/sound system/i.test(name)) {
-                    finalQty = getPavilionSoundSystemMaxQuantity(addingToEvent?.location, addingToEvent?.locations, finalQty);
-                  }
-                  basePoolByName.set(name, finalQty);
-
+                if (name && Number.isFinite(qty) && qty > 0) {
+                  basePoolByName.set(name, (basePoolByName.get(name) || 0) + qty);
                 }
-
               });
 
-
-
-              // Fetch conflicting events (same logic already used below)
-
-              const eventDate = new Date(addingToEvent.startDate);
-
+              // Fetch all events for conflict checking across all event dates
               const eventsResponse = await axios.get(`${API_BASE_URL}/events`, {
-
                 headers: { 'Authorization': `Bearer ${token}` }
-
               });
 
               const allEvents = Array.isArray(eventsResponse.data)
-
                 ? eventsResponse.data
-
                 : Array.isArray(eventsResponse.data?.data)
-
                   ? eventsResponse.data.data
-
                   : [];
 
-
-
               const normalizeLocation = (s: any) =>
-
                 String(s || '')
-
                   .toLowerCase()
-
                   .trim()
-
                   .replace(/\s+/g, ' ')
-
                   .replace(/[’']/g, "'");
 
-
-
               const locationsSharePavilionPool = (a: any, b: any): boolean => {
-
                 const aRaw = String(a || '');
-
                 const bRaw = String(b || '');
-
                 if (!aRaw || !bRaw) return false;
-
                 if (aRaw.includes('Pavilion') && bRaw.includes('Pavilion')) return true;
-
                 return normalizeLocation(aRaw) === normalizeLocation(bRaw);
-
               };
 
-
-
               const selectedLocationsRaw: string[] = Array.isArray(addingToEvent?.locations) && addingToEvent.locations.length > 0
-
                 ? addingToEvent.locations
-
                 : (addingToEvent?.location ? [addingToEvent.location] : []);
-
               const selectedLocationsNorm = selectedLocationsRaw.map(normalizeLocation).filter((l) => l.length > 0);
-
               const isSelectedPavilionPool = selectedLocationsRaw.some((l) => String(l || '').includes('Pavilion'));
 
+              // Build all dates for the current event (multi-day support)
+              const normalizeDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+              const buildEventDates = (ev: any): Date[] => {
+                const dates: Date[] = [];
+                if (ev.startDate) {
+                  const start = normalizeDay(new Date(ev.startDate));
+                  const end = ev.endDate ? normalizeDay(new Date(ev.endDate)) : start;
+                  const cursor = new Date(start);
+                  while (cursor <= end) {
+                    dates.push(new Date(cursor));
+                    cursor.setDate(cursor.getDate() + 1);
+                  }
+                }
+                if (Array.isArray(ev.dateTimeSlots)) {
+                  ev.dateTimeSlots.forEach((slot: any) => {
+                    if (slot?.startDate) {
+                      const slotDay = normalizeDay(new Date(slot.startDate));
+                      if (!dates.some(d => d.toDateString() === slotDay.toDateString())) {
+                        dates.push(slotDay);
+                      }
+                    }
+                  });
+                }
+                return dates;
+              };
 
+              const currentEventDates = buildEventDates(addingToEvent);
 
-              const conflictingEvents = allEvents.filter((event: any) => {
+              // Helper: check if another event occupies a specific day
+              const otherEventUsesDay = (event: any, checkDateStr: string): boolean => {
+                if (Array.isArray(event?.dateTimeSlots) && event.dateTimeSlots.length > 0) {
+                  return event.dateTimeSlots.some((s: any) =>
+                    s?.startDate && normalizeDay(new Date(s.startDate)).toDateString() === checkDateStr
+                  );
+                }
+                if (!event?.startDate) return false;
+                const start = normalizeDay(new Date(event.startDate));
+                const end = event?.endDate ? normalizeDay(new Date(event.endDate)) : start;
+                const day = new Date(checkDateStr);
+                return day >= start && day <= end;
+              };
 
-                if (event._id === addingToEvent._id) return false;
-
-                if (!event.startDate || !event.startTime || !event.endTime) return false;
-
-
-
-                const eventStartDate = new Date(event.startDate);
-
-                const isSameDate = eventStartDate.toDateString() === eventDate.toDateString();
-
-                if (!isSameDate) return false;
-
-
-
-                const hasTimeOverlap = (
-
-                  (addingToEvent.startTime >= event.startTime && addingToEvent.startTime < event.endTime) ||
-
-                  (addingToEvent.endTime > event.startTime && addingToEvent.endTime <= event.endTime) ||
-
-                  (addingToEvent.startTime <= event.startTime && addingToEvent.endTime >= event.endTime)
-
-                );
-
-
-
+              // Helper: check if another event has location overlap with current event
+              const hasLocationOverlap = (event: any): boolean => {
                 const eventLocationsRaw: string[] = Array.isArray(event?.locations) && event.locations.length > 0
-
                   ? event.locations
-
                   : (event?.location ? [event.location] : []);
-
                 const eventLocationsNorm = eventLocationsRaw.map(normalizeLocation).filter((l) => l.length > 0);
 
-                const hasLocationOverlap = selectedLocationsNorm.length === 0
-
+                return selectedLocationsNorm.length === 0
                   ? true
-
                   : isSelectedPavilionPool
-
                     ? eventLocationsRaw.some((l) => locationsSharePavilionPool(selectedLocationsRaw[0], l))
-
                     : eventLocationsNorm.some((l) => selectedLocationsNorm.includes(l));
+              };
 
+              // Filter to events that overlap on ANY of current event's dates + have location overlap
+              const conflictingEvents = allEvents.filter((event: any) => {
+                if (event._id === addingToEvent._id) return false;
+                if (event.status === 'cancelled') return false;
+                if (event.status !== 'approved' && event.status !== 'submitted') return false;
 
+                const hasDateOverlap = currentEventDates.some(d =>
+                  otherEventUsesDay(event, d.toDateString())
+                );
+                if (!hasDateOverlap) return false;
 
-                return hasTimeOverlap && hasLocationOverlap;
+                if (!hasLocationOverlap(event)) return false;
 
+                return true;
               });
-
-
 
               const selectedLocationLabel = Array.isArray(addingToEvent?.locations) && addingToEvent.locations.length > 0
-
                 ? addingToEvent.locations.join(' + ')
-
                 : (addingToEvent.location || 'selected location');
 
-
-
+              // Compute per-day availability and take MINIMUM across all event days
               const reqs = Array.from(basePoolByName.entries()).map(([name, baseQuantity]) => {
-
-                let bookedQuantity = 0;
-
-
-
-                // Booked in current event already
-
-                if (addingToEvent.departmentRequirements && addingToEvent.departmentRequirements[deptName]) {
-
-                  const currentEventReqs = addingToEvent.departmentRequirements[deptName];
-
-                  const alreadyBooked = currentEventReqs.find((r: any) => r.name === name);
-
-                  if (alreadyBooked && alreadyBooked.quantity) {
-
-                    bookedQuantity += alreadyBooked.quantity;
-
+                const getBookedOnDay = (dayStr: string): number => {
+                  let booked = 0;
+                  if (addingToEvent.departmentRequirements) {
+                    Object.keys(addingToEvent.departmentRequirements).forEach((deptKey: string) => {
+                      const deptReqs = addingToEvent.departmentRequirements[deptKey];
+                      if (Array.isArray(deptReqs)) {
+                        const match = deptReqs.find((r: any) => r.name === name && r.selected);
+                        if (match && match.quantity) {
+                          booked += match.quantity;
+                        }
+                      }
+                    });
                   }
 
-                }
+                  conflictingEvents.forEach((event: any) => {
+                    if (!otherEventUsesDay(event, dayStr)) return;
 
-
-
-                // Booked in other overlapping events
-
-                conflictingEvents.forEach((event: any) => {
-
-                  if (event.departmentRequirements && event.departmentRequirements[deptName]) {
-
-                    const deptReqs = event.departmentRequirements[deptName];
-
-                    const matchingReq = deptReqs.find((r: any) => r.name === name);
-
-                    if (matchingReq && matchingReq.quantity) {
-
-                      bookedQuantity += matchingReq.quantity;
-
+                    if (event.taggedDepartments && event.departmentRequirements) {
+                      event.taggedDepartments.forEach((deptKey: string) => {
+                        const deptReqs = event.departmentRequirements[deptKey];
+                        if (Array.isArray(deptReqs)) {
+                          const matchingReq = deptReqs.find((r: any) => r.name === name && r.selected);
+                          if (matchingReq && matchingReq.quantity) {
+                            booked += matchingReq.quantity;
+                          }
+                        }
+                      });
                     }
+                  });
 
-                  }
-
-                });
-
-
-
-                const actualAvailable = Math.max(0, (baseQuantity || 0) - bookedQuantity);
-
-
-
-                return {
-
-                  id: `pgso-location-${name}`,
-
-                  name,
-
-                  type: 'physical',
-
-                  selected: false,
-
-                  quantity: 1,
-
-                  notes: '',
-
-                  totalQuantity: actualAvailable,
-
-                  baseQuantity,
-
-                  bookedQuantity,
-
-                  isAvailable: actualAvailable > 0,
-
-                  availabilityNotes: `PAVILION_DEFAULT:${baseQuantity}:${selectedLocationLabel}`
-
+                  return booked;
                 };
 
+                const perDayAvail = currentEventDates.map(d => {
+                  const booked = getBookedOnDay(d.toDateString());
+                  return Math.max(0, (baseQuantity || 0) - booked);
+                });
+                const actualAvailable = perDayAvail.length > 0 ? Math.min(...perDayAvail) : Math.max(0, baseQuantity || 0);
+                const worstDayBooked = (baseQuantity || 0) - actualAvailable;
+
+                return {
+                  id: `pgso-location-${name}`,
+                  name,
+                  type: 'physical',
+                  selected: false,
+                  quantity: 1,
+                  notes: '',
+                  totalQuantity: actualAvailable,
+                  baseQuantity,
+                  bookedQuantity: worstDayBooked,
+                  isAvailable: actualAvailable > 0,
+                  availabilityNotes: `PAVILION_DEFAULT:${baseQuantity}:${selectedLocationLabel}`
+                };
               });
 
-
-
               setDepartmentRequirements(reqs);
-
               setShowDepartmentRequirementsModal(true);
-
               return;
-
             }
-
           }
 
-
-
-          // Fetch availability for the event date
-
-          const eventDate = new Date(addingToEvent.startDate);
-
-          const year = eventDate.getFullYear();
-
-          const month = String(eventDate.getMonth() + 1).padStart(2, '0');
-
-          const day = String(eventDate.getDate()).padStart(2, '0');
-
-          const dateStr = `${year}-${month}-${day}`;
-
-
-
-
-
-          // Fetch resource availability for this department and date
-
-          const availResponse = await axios.get(
-
-            `${API_BASE_URL}/resource-availability/department/${dept._id}/availability?startDate=${dateStr}&endDate=${dateStr}`,
-
-            { headers: { 'Authorization': `Bearer ${token}` } }
-
-          );
-
-
-
-          const availabilities = Array.isArray(availResponse.data)
-
-            ? availResponse.data
-
-            : Array.isArray(availResponse.data?.data)
-
-              ? availResponse.data.data
-
-              : [];
-
-
-
-          // Fetch conflicting events to calculate actual available quantity
-
-          const eventsResponse = await axios.get(`${API_BASE_URL}/events`, {
-
-            headers: { 'Authorization': `Bearer ${token}` }
-
-          });
-
-
-
-          const allEvents = Array.isArray(eventsResponse.data)
-
-            ? eventsResponse.data
-
-            : Array.isArray(eventsResponse.data?.data)
-
-              ? eventsResponse.data.data
-
-              : [];
-
-
-
-
-
-          const normalizeLocation = (s: any) =>
-
-            String(s || '')
-
-              .toLowerCase()
-
-              .trim()
-
-              .replace(/\s+/g, ' ')
-
-              .replace(/[’']/g, "'");
-
-
-
-          const locationsSharePavilionPool = (a: any, b: any): boolean => {
-
-            const aRaw = String(a || '');
-
-            const bRaw = String(b || '');
-
-            if (!aRaw || !bRaw) return false;
-
-            if (aRaw.includes('Pavilion') && bRaw.includes('Pavilion')) return true;
-
-            return normalizeLocation(aRaw) === normalizeLocation(bRaw);
-
+          // Fetch resource availability and calculate multi-day availability for non-PGSO / regular departments
+          const normalizeDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+          const buildEventDates = (ev: any): Date[] => {
+            const dates: Date[] = [];
+            if (ev.startDate) {
+              const start = normalizeDay(new Date(ev.startDate));
+              const end = ev.endDate ? normalizeDay(new Date(ev.endDate)) : start;
+              const cursor = new Date(start);
+              while (cursor <= end) {
+                dates.push(new Date(cursor));
+                cursor.setDate(cursor.getDate() + 1);
+              }
+            }
+            if (Array.isArray(ev.dateTimeSlots)) {
+              ev.dateTimeSlots.forEach((slot: any) => {
+                if (slot?.startDate) {
+                  const slotDay = normalizeDay(new Date(slot.startDate));
+                  if (!dates.some(d => d.toDateString() === slotDay.toDateString())) {
+                    dates.push(slotDay);
+                  }
+                }
+              });
+            }
+            return dates;
           };
 
+          const currentEventDates = buildEventDates(addingToEvent);
+          const eventDate = new Date(addingToEvent.startDate);
+          const year = eventDate.getFullYear();
+          const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+          const day = String(eventDate.getDate()).padStart(2, '0');
+          const dateStr = `${year}-${month}-${day}`;
 
+          const availResponse = await axios.get(
+            `${API_BASE_URL}/resource-availability/department/${dept._id}/availability?startDate=${dateStr}&endDate=${dateStr}`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+
+          const availabilities = Array.isArray(availResponse.data)
+            ? availResponse.data
+            : Array.isArray(availResponse.data?.data)
+              ? availResponse.data.data
+              : [];
+
+          const eventsResponse = await axios.get(`${API_BASE_URL}/events`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          const allEvents = Array.isArray(eventsResponse.data)
+            ? eventsResponse.data
+            : Array.isArray(eventsResponse.data?.data)
+              ? eventsResponse.data.data
+              : [];
+
+          const normalizeLocation = (s: any) =>
+            String(s || '')
+              .toLowerCase()
+              .trim()
+              .replace(/\s+/g, ' ')
+              .replace(/[’']/g, "'");
+
+          const locationsSharePavilionPool = (a: any, b: any): boolean => {
+            const aRaw = String(a || '');
+            const bRaw = String(b || '');
+            if (!aRaw || !bRaw) return false;
+            if (aRaw.includes('Pavilion') && bRaw.includes('Pavilion')) return true;
+            return normalizeLocation(aRaw) === normalizeLocation(bRaw);
+          };
 
           const selectedLocationsRaw: string[] = Array.isArray(addingToEvent?.locations) && addingToEvent.locations.length > 0
-
             ? addingToEvent.locations
-
             : (addingToEvent?.location ? [addingToEvent.location] : []);
-
           const selectedLocationsNorm = selectedLocationsRaw.map(normalizeLocation).filter((l) => l.length > 0);
-
           const isSelectedPavilionPool = selectedLocationsRaw.some((l) => String(l || '').includes('Pavilion'));
 
+          const otherEventUsesDay = (event: any, checkDateStr: string): boolean => {
+            if (Array.isArray(event?.dateTimeSlots) && event.dateTimeSlots.length > 0) {
+              return event.dateTimeSlots.some((s: any) =>
+                s?.startDate && normalizeDay(new Date(s.startDate)).toDateString() === checkDateStr
+              );
+            }
+            if (!event?.startDate) return false;
+            const start = normalizeDay(new Date(event.startDate));
+            const end = event?.endDate ? normalizeDay(new Date(event.endDate)) : start;
+            const dayObj = new Date(checkDateStr);
+            return dayObj >= start && dayObj <= end;
+          };
 
-
-          const conflictingEvents = allEvents.filter((event: any) => {
-
-            if (event._id === addingToEvent._id) return false; // Exclude current event
-
-            if (!event.startDate || !event.startTime || !event.endTime) return false;
-
-
-
-            const eventStartDate = new Date(event.startDate);
-
-            const isSameDate = eventStartDate.toDateString() === eventDate.toDateString();
-
-
-
-
-
-            if (!isSameDate) return false;
-
-
-
-            // Check time overlap
-
-            const hasTimeOverlap = (
-
-              (addingToEvent.startTime >= event.startTime && addingToEvent.startTime < event.endTime) ||
-
-              (addingToEvent.endTime > event.startTime && addingToEvent.endTime <= event.endTime) ||
-
-              (addingToEvent.startTime <= event.startTime && addingToEvent.endTime >= event.endTime)
-
-            );
-
-
-
+          const hasLocationOverlap = (event: any): boolean => {
             const eventLocationsRaw: string[] = Array.isArray(event?.locations) && event.locations.length > 0
-
               ? event.locations
-
               : (event?.location ? [event.location] : []);
-
             const eventLocationsNorm = eventLocationsRaw.map(normalizeLocation).filter((l) => l.length > 0);
 
-
-
-            const hasLocationOverlap = selectedLocationsNorm.length === 0
-
+            return selectedLocationsNorm.length === 0
               ? true
-
               : isSelectedPavilionPool
-
                 ? eventLocationsRaw.some((l) => locationsSharePavilionPool(selectedLocationsRaw[0], l))
-
                 : eventLocationsNorm.some((l) => selectedLocationsNorm.includes(l));
+          };
 
+          const conflictingEvents = allEvents.filter((event: any) => {
+            if (event._id === addingToEvent._id) return false;
+            if (event.status === 'cancelled') return false;
+            if (event.status !== 'approved' && event.status !== 'submitted') return false;
 
+            const hasDateOverlap = currentEventDates.some(d =>
+              otherEventUsesDay(event, d.toDateString())
+            );
+            if (!hasDateOverlap) return false;
 
-            return hasTimeOverlap && hasLocationOverlap;
+            if (!hasLocationOverlap(event)) return false;
 
+            return true;
           });
-
-
-
-
-
-          // Map department default requirements (do NOT require availability records to exist).
-
-          // Availability, if present, only affects the badges and remaining qty.
 
           const reqs = (dept.requirements || []).map((req: any) => {
-
             const avail = availabilities.find((a: any) => a.requirementId === req._id);
 
-
-
-            // Determine base quantity.
-
             let baseQuantity: number = 0;
-
             if (dept.name === 'PGSO' && avail?.notes && typeof avail.notes === 'string' && avail.notes.startsWith('PAVILION_DEFAULT:')) {
-
               const parts = avail.notes.split(':');
-
               const pavilionQty = parseInt(parts[1] || '0', 10);
-
               if (!isNaN(pavilionQty) && pavilionQty > 0) {
-
                 baseQuantity = pavilionQty;
-
               } else {
-
                 baseQuantity = (avail?.quantity || req.totalQuantity || 0);
-
               }
-
             } else {
-
               baseQuantity = (avail?.quantity ?? req.totalQuantity ?? 0);
-
             }
 
+            // Compute per-day booked quantity and take MINIMUM availability across all event days
+            const perDayAvail = currentEventDates.map((checkDay) => {
+              const dayStr = checkDay.toDateString();
+              let bookedOnDay = 0;
 
-
-            // Calculate how much is already booked by conflicting events AND current event
-
-            let bookedQuantity = 0;
-
-
-
-            // First, check what THIS event has already booked
-
-            if (addingToEvent.departmentRequirements && addingToEvent.departmentRequirements[deptName]) {
-
-              const currentEventReqs = addingToEvent.departmentRequirements[deptName];
-
-              const alreadyBooked = currentEventReqs.find((r: any) => r.name === req.text);
-
-              if (alreadyBooked && alreadyBooked.quantity) {
-
-                bookedQuantity += alreadyBooked.quantity;
-
-              }
-
-            }
-
-
-
-            // Then add what other conflicting events have booked
-
-            conflictingEvents.forEach((event: any) => {
-
-              if (event.departmentRequirements && event.departmentRequirements[deptName]) {
-
-                const deptReqs = event.departmentRequirements[deptName];
-
-                const matchingReq = deptReqs.find((r: any) => r.name === req.text);
-
-                if (matchingReq && matchingReq.quantity) {
-
-                  bookedQuantity += matchingReq.quantity;
-
+              // Check what THIS event has already booked
+              if (addingToEvent.departmentRequirements && addingToEvent.departmentRequirements[deptName]) {
+                const currentEventReqs = addingToEvent.departmentRequirements[deptName];
+                const alreadyBooked = currentEventReqs.find((r: any) => r.name === req.text);
+                if (alreadyBooked && alreadyBooked.quantity) {
+                  bookedOnDay += alreadyBooked.quantity;
                 }
-
               }
 
+              // Check what conflicting events have booked on this day
+              conflictingEvents.forEach((event: any) => {
+                if (!otherEventUsesDay(event, dayStr)) return;
+                if (event.departmentRequirements && event.departmentRequirements[deptName]) {
+                  const deptReqs = event.departmentRequirements[deptName];
+                  const matchingReq = deptReqs.find((r: any) => r.name === req.text);
+                  if (matchingReq && matchingReq.quantity) {
+                    bookedOnDay += matchingReq.quantity;
+                  }
+                }
+              });
+
+              return Math.max(0, baseQuantity - bookedOnDay);
             });
 
-
-
-            const actualAvailable = Math.max(0, baseQuantity - bookedQuantity);
-
-
-
-
+            const actualAvailable = perDayAvail.length > 0 ? Math.min(...perDayAvail) : Math.max(0, baseQuantity);
+            const worstDayBooked = baseQuantity - actualAvailable;
 
             return {
-
               id: req._id,
-
               name: req.text,
-
               type: req.type,
-
               selected: false,
-
               quantity: req.type === 'physical' ? 1 : undefined,
-
               notes: '',
-
-              totalQuantity: actualAvailable, // Use actual available quantity
-
-              baseQuantity: baseQuantity, // Keep base for reference
-
-              bookedQuantity: bookedQuantity,
-
-              // If no availability record exists, still show as available based on remaining qty.
-
+              totalQuantity: actualAvailable,
+              baseQuantity: baseQuantity,
+              bookedQuantity: worstDayBooked,
               isAvailable: (avail?.isAvailable ?? true) && actualAvailable > 0,
-
               availabilityNotes: avail?.notes || ''
-
             };
-
           });
 
-
-
           setDepartmentRequirements(reqs);
-
           setShowDepartmentRequirementsModal(true);
-
         }
-
       }
-
     } catch (error) {
 
       toast.error('Failed to load department requirements');
