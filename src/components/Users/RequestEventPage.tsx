@@ -2501,7 +2501,7 @@ const RequestEventPage: React.FC = () => {
           return false;
         }
 
-        if (!event.startDate || !event.startTime || !event.endDate || !event.endTime) {
+        if (!event.startDate) {
           return false;
         }
 
@@ -2567,16 +2567,16 @@ const RequestEventPage: React.FC = () => {
 
     const eventUsesDay = (event: any) => {
       // If there are explicit slots, trust them
-      if (Array.isArray(event?.dateTimeSlots)) {
+      if (Array.isArray(event?.dateTimeSlots) && event.dateTimeSlots.length > 0) {
         return event.dateTimeSlots.some((s: any) => s?.startDate && normalizeDay(new Date(s.startDate)).toDateString() === checkDateStr);
       }
 
-      if (!event?.startDate || !event?.endDate) {
+      if (!event?.startDate) {
         return false;
       }
 
       const start = normalizeDay(new Date(event.startDate));
-      const end = normalizeDay(new Date(event.endDate));
+      const end = event?.endDate ? normalizeDay(new Date(event.endDate)) : start;
       const day = normalizeDay(new Date(checkDate));
       return day >= start && day <= end;
     };
@@ -2585,10 +2585,16 @@ const RequestEventPage: React.FC = () => {
       // Only subtract bookings that overlap the specific day we're checking
       if (!eventUsesDay(event)) return;
 
+      const eventLocs: string[] = Array.isArray(event?.locations) && event.locations.length > 0
+        ? event.locations
+        : (event?.location ? [event.location] : []);
+
       if (isLocationDefault) {
-        const eventLoc = (event?.location || '').toString();
-        if (!locationDefaultTarget || !eventLoc) return;
-        if (!locationsSharePavilionPool(locationDefaultTarget, eventLoc, requirement.name)) return;
+        if (!locationDefaultTarget) return;
+        const shares = eventLocs.length === 0
+          ? true
+          : eventLocs.some((l) => locationsSharePavilionPool(locationDefaultTarget, l, requirement.name));
+        if (!shares) return;
       }
 
       // Check ALL departments in the event, not just the current department
@@ -2640,10 +2646,16 @@ const RequestEventPage: React.FC = () => {
     const locationDefaultTarget = isLocationDefault ? notes.split(':').slice(2).join(':') : '';
 
     return conflictingEvents.some(event => {
+      const eventLocs: string[] = Array.isArray(event?.locations) && event.locations.length > 0
+        ? event.locations
+        : (event?.location ? [event.location] : []);
+
       if (isLocationDefault) {
-        const eventLoc = (event?.location || '').toString();
-        if (!locationDefaultTarget || !eventLoc) return false;
-        if (!locationsSharePavilionPool(locationDefaultTarget, eventLoc, requirement.name)) return false;
+        if (!locationDefaultTarget) return false;
+        const shares = eventLocs.length === 0
+          ? true
+          : eventLocs.some((l) => locationsSharePavilionPool(locationDefaultTarget, l, requirement.name));
+        if (!shares) return false;
       }
 
       // Check ALL departments in the event, not just the current department
