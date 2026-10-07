@@ -361,6 +361,16 @@ const locations = [
 
   'Emiliana Hall',
 
+  'Pavilion - Kagitingan Hall (Entire)',
+
+  'Pavilion - Kagitingan Hall - Section A',
+
+  'Pavilion - Kagitingan Hall - Section B',
+
+  'Pavilion - Kagitingan Hall - Section C',
+
+  'Pavilion - Kalayaan Ballroom (Entire)',
+
   'Pavilion - Kalayaan Ballroom'
 
 ];
@@ -5712,7 +5722,7 @@ const MyEventsPage: React.FC = () => {
                               </span>
                               <span className="flex items-center gap-1">
                                 <MapPin className="w-3 h-3" />
-                                {event.location}
+                                {event.locations && event.locations.length > 1 ? event.locations.join(' + ') : event.location}
                               </span>
                               <span className="flex items-center gap-1">
                                 <Users className="w-3 h-3" />

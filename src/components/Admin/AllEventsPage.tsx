@@ -1510,9 +1510,12 @@ const AllEventsPage: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1 text-gray-600">
-                              <MapPin className="w-3 h-3" />
-                              <span className="truncate max-w-[120px]" title={event.location}>
-                                {event.location}
+                              <MapPin className="w-3 h-3 flex-shrink-0" />
+                              <span
+                                className="truncate max-w-[150px]"
+                                title={event.locations && event.locations.length > 1 ? event.locations.join(' + ') : event.location}
+                              >
+                                {event.locations && event.locations.length > 1 ? event.locations.join(' + ') : event.location}
                               </span>
                             </div>
                           </TableCell>

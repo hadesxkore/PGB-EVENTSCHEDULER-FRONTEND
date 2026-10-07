@@ -1416,6 +1416,11 @@ const RequestEventPage: React.FC = () => {
   const handleRemoveConferenceRoom = async (roomName: string) => {
     const updatedLocations = formData.locations.filter(loc => loc !== roomName);
     handleInputChange('locations', updatedLocations);
+    if (updatedLocations.length > 0) {
+      handleInputChange('location', updatedLocations[0]);
+    } else {
+      handleInputChange('location', '');
+    }
     if (updatedLocations.length <= 1) {
       handleInputChange('multipleLocations', false);
     }
@@ -6319,7 +6324,10 @@ const RequestEventPage: React.FC = () => {
                                 if (unavailable) return;
                                 if (!formData.locations.includes(section)) {
                                   await fetchAvailableDatesForLocation(section);
-                                  handleInputChange('locations', [...formData.locations, section]);
+                                  const kagitinganOnly = formData.locations.filter(l => l.includes('Kagitingan'));
+                                  const nextLocs = [...kagitinganOnly, section];
+                                  handleInputChange('locations', nextLocs);
+                                  handleInputChange('multipleLocations', nextLocs.length > 1);
                                 }
                               }}
                               className={`text-xs h-8 px-3 ${unavailable ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-50'}`}
@@ -6349,7 +6357,10 @@ const RequestEventPage: React.FC = () => {
                                 if (unavailable) return;
                                 if (!formData.locations.includes(section)) {
                                   await fetchAvailableDatesForLocation(section);
-                                  handleInputChange('locations', [...formData.locations, section]);
+                                  const kagitinganOnly = formData.locations.filter(l => l.includes('Kagitingan'));
+                                  const nextLocs = [...kagitinganOnly, section];
+                                  handleInputChange('locations', nextLocs);
+                                  handleInputChange('multipleLocations', nextLocs.length > 1);
                                 }
                               }}
                               className={`text-xs h-8 px-3 ${unavailable ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-50'}`}
@@ -6379,7 +6390,10 @@ const RequestEventPage: React.FC = () => {
                                 if (unavailable) return;
                                 if (!formData.locations.includes(section)) {
                                   await fetchAvailableDatesForLocation(section);
-                                  handleInputChange('locations', [...formData.locations, section]);
+                                  const kagitinganOnly = formData.locations.filter(l => l.includes('Kagitingan'));
+                                  const nextLocs = [...kagitinganOnly, section];
+                                  handleInputChange('locations', nextLocs);
+                                  handleInputChange('multipleLocations', nextLocs.length > 1);
                                 }
                               }}
                               className={`text-xs h-8 px-3 ${unavailable ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-50'}`}
