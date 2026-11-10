@@ -1014,7 +1014,7 @@ const MyEventsPage: React.FC = () => {
 
           .replace(/\s+/g, ' ')
 
-          .replace(/[â€™']/g, "'");
+          .replace(/['']/g, "'");
 
 
 
@@ -2560,7 +2560,7 @@ const MyEventsPage: React.FC = () => {
           const extracted = extractChairs(loc);
           chairs = extracted.capacity;
           breakdown = extracted.capacity > extracted.total && extracted.total > 0
-            ? `${extracted.total} default chairs Â· up to ${extracted.capacity.toLocaleString()} pax capacity`
+            ? `${extracted.total} default chairs · up to ${extracted.capacity.toLocaleString()} pax capacity`
             : extracted.capacity > extracted.total && extracted.total === 0
               ? `up to ${extracted.capacity.toLocaleString()} pax capacity`
               : extracted.breakdown;
@@ -2607,14 +2607,14 @@ const MyEventsPage: React.FC = () => {
           results.push({
             name: label, chairs: totalChairs, isMulti: combo.length > 1, rooms: combo,
             note: combo.length > 1
-              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} Â· ${totalChairs} chairs`
+              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} · ${totalChairs} chairs`
               : undefined,
             isBooked: allBookedDates.length > 0, bookedOnDates: allBookedDates,
           });
         }
       }
 
-      // 3) Pavilion - Kagitingan Hall sections (A, B, C â€” individually bookable)
+      // 3) Pavilion - Kagitingan Hall sections (A, B, C — individually bookable)
       if (pavilionPoolChairs > 0) {
         const KAGITINGAN_SECTIONS = [
           'Pavilion - Kagitingan Hall - Section A',
@@ -2644,10 +2644,10 @@ const MyEventsPage: React.FC = () => {
 
             const sectionCount = combo.length;
             const seatsLabel = sectionCount === 1
-              ? 'approx 50â€“100 seats'
+              ? 'approx 50–100 seats'
               : sectionCount === 2
-                ? 'approx 100â€“200 seats'
-                : 'approx 150â€“300 seats';
+                ? 'approx 100–200 seats'
+                : 'approx 150–300 seats';
 
             results.push({
               name: label,
@@ -4161,7 +4161,7 @@ const MyEventsPage: React.FC = () => {
                   .toLowerCase()
                   .trim()
                   .replace(/\s+/g, ' ')
-                  .replace(/[â€™']/g, "'");
+                  .replace(/['']/g, "'");
 
               const locationsSharePavilionPool = (a: any, b: any): boolean => {
                 const aRaw = String(a || '');
@@ -4375,7 +4375,7 @@ const MyEventsPage: React.FC = () => {
               .toLowerCase()
               .trim()
               .replace(/\s+/g, ' ')
-              .replace(/[â€™']/g, "'");
+              .replace(/['']/g, "'");
 
           const locationsSharePavilionPool = (a: any, b: any): boolean => {
             const aRaw = String(a || '');
@@ -8412,7 +8412,7 @@ const MyEventsPage: React.FC = () => {
 
                 <p className="text-xs text-gray-600 mt-1">
 
-                  {new Date(addingToEvent.startDate).toLocaleDateString()} â€¢ {addingToEvent.location}
+                  {new Date(addingToEvent.startDate).toLocaleDateString()} • {addingToEvent.location}
 
                 </p>
 
@@ -9929,7 +9929,7 @@ const MyEventsPage: React.FC = () => {
                   </label>
                   <Select value={autoSuggestEndTime} onValueChange={(v) => setAutoSuggestEndTime(v)} disabled={!autoSuggestStartTime}>
                     <SelectTrigger className="h-9 text-sm bg-white border-gray-200 rounded-lg" disabled={!autoSuggestStartTime}>
-                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : 'â€”'} />
+                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : '—'} />
                     </SelectTrigger>
                     <SelectContent className="max-h-56">
                       {generateTimeOptions()
@@ -9953,7 +9953,7 @@ const MyEventsPage: React.FC = () => {
               className="w-full h-10 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors"
             >
               {loadingAutoSuggest
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availabilityâ€¦</>
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability…</>
                 : <><Sparkles className="w-3.5 h-3.5" /> Find Suitable Venues</>}
             </button>
 
@@ -9969,7 +9969,7 @@ const MyEventsPage: React.FC = () => {
                     </span>
                     {suggestedLocations.filter(s => s.isBooked).length > 0 && (
                       <>
-                        <span className="text-gray-300">Â·</span>
+                        <span className="text-gray-300">·</span>
                         <span className="flex items-center gap-1 text-red-500">
                           <Ban className="w-3.5 h-3.5" />
                           {suggestedLocations.filter(s => s.isBooked).length} booked
@@ -10023,13 +10023,13 @@ const MyEventsPage: React.FC = () => {
                             </span>
                             {sug.isMulti && (
                               <>
-                                <span className="text-gray-300 text-xs">Â·</span>
+                                <span className="text-gray-300 text-xs">·</span>
                                 <span className="text-xs text-violet-500 font-medium">Multi-room</span>
                               </>
                             )}
                             {sug.note && (
                               <>
-                                <span className="text-gray-300 text-xs">Â·</span>
+                                <span className="text-gray-300 text-xs">·</span>
                                 <span className="text-xs text-gray-400 truncate">{sug.note}</span>
                               </>
                             )}
@@ -10049,9 +10049,9 @@ const MyEventsPage: React.FC = () => {
                               <CalendarIcon className="w-2.5 h-2.5 flex-shrink-0" />
                               {format(autoSuggestStartDate, 'MMM dd')}
                               {autoSuggestEndDate && autoSuggestEndDate.getTime() !== autoSuggestStartDate.getTime()
-                                ? ` â€“ ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
+                                ? ` – ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
                                 : `, ${format(autoSuggestStartDate, 'yyyy')}`}
-                              {autoSuggestStartTime && ` Â· ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` â€“ ${formatTime(autoSuggestEndTime)}` : ''}`}
+                              {autoSuggestStartTime && ` · ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` – ${formatTime(autoSuggestEndTime)}` : ''}`}
                             </p>
                           )}
                         </div>

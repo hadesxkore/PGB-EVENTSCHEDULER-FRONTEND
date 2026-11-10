@@ -754,14 +754,18 @@ const RequestEventPage: React.FC = () => {
     const isPavilion1 = loc1.includes('Pavilion');
     const isPavilion2 = loc2.includes('Pavilion');
 
-    // Sound System is per-hall, not shared across all Pavilion locations
-    if (isPavilion1 && isPavilion2 && requirementName && /sound system/i.test(requirementName)) {
+    if (isPavilion1 && isPavilion2) {
       const hall1 = getPavilionHall(loc1);
       const hall2 = getPavilionHall(loc2);
-      return hall1 !== null && hall1 === hall2;
+      // Kalayaan Ballroom is a single room (Entire) with its own independent inventory.
+      // It NEVER shares requirements or pool with Kagitingan Hall!
+      // Only sections within the same hall (i.e. Kagitingan Hall sections) share inventory.
+      if (hall1 && hall2 && hall1 === hall2) {
+        return true;
+      }
+      return false;
     }
 
-    if (isPavilion1 && isPavilion2) return true;
     return locationsConflict(loc1, loc2);
   };
 
@@ -1033,6 +1037,52 @@ const RequestEventPage: React.FC = () => {
             }
           }
 
+          // 3. Proportional allocation for Kagitingan multi-section combos (A+B, A+C, B+C, etc.)
+          if (aggregatedMap.size === 0) {
+            const parentGroupDoc = allRequirements.find((doc: any) => {
+              if (!doc.locationNames || !Array.isArray(doc.locationNames)) return false;
+              // Match if all selected sections belong to this group (by exact match or section token)
+              return selectedLocs.every((sl: string) => {
+                if (doc.locationNames.includes(sl)) return true;
+                const secMatch = sl.match(/Section\s+([A-C])/i);
+                if (secMatch) {
+                  return doc.locationNames.some((dn: string) => dn.includes(secMatch[0]));
+                }
+                return false;
+              });
+            });
+
+            if (parentGroupDoc && Array.isArray(parentGroupDoc.requirements)) {
+              const totalSections = (parentGroupDoc.locationNames as string[]).filter(
+                (loc: string) => !/\bEntire\b/i.test(loc)
+              ).length || 3;
+
+              const selectedSectionCount = selectedLocs.filter(
+                (sl: string) => !/\bEntire\b/i.test(sl)
+              ).length;
+
+              if (totalSections > 0 && selectedSectionCount > 0) {
+                parentGroupDoc.requirements.forEach((req: any) => {
+                  const key = req.name.trim();
+                  // Sound System: 1 per section, max 3
+                  if (/sound system/i.test(key)) {
+                    aggregatedMap.set(key, Math.min(selectedSectionCount, req.quantity || 3));
+                  } else if (/(monoblock|lifetime table|tables?\s*\(long\))/i.test(key)) {
+                    // Monoblock Chairs (300/3 = 100/sec) and Lifetime Tables (30/3 = 10/sec)
+                    const perSection = Math.floor((req.quantity || 0) / totalSections);
+                    aggregatedMap.set(key, perSection * selectedSectionCount);
+                  } else {
+                    // Other logistics (microphones, mic stands, stage platforms) retain existing quantities
+                    aggregatedMap.set(key, req.quantity || 0);
+                  }
+                });
+                if (Array.isArray(parentGroupDoc.roomTypes)) {
+                  parentGroupDoc.roomTypes.forEach((rt: string) => roomTypesSet.add(rt));
+                }
+              }
+            }
+          }
+
           if (aggregatedMap.size > 0) {
             const finalReqs = Array.from(aggregatedMap.entries()).map(([name, quantity]) => {
               if (/sound system/i.test(name)) {
@@ -1120,7 +1170,10 @@ const RequestEventPage: React.FC = () => {
         // This handles Kagitingan Hall Section A/B/C each getting 1/3 of the combined qty
         // (e.g. 300 Monoblock Chairs -> 100 per section, 30 Tables -> 10, etc.)
         // Sound System is handled separately via getPavilionSoundSystemMaxQuantity.
-        const isGroupFallback = !exactMatch && requirementsSource &&
+        // When location IS "Entire", it occupies all sections → return full combined qty (no division).
+        // When a specific SECTION is selected and only a group doc exists → divide by sectionCount.
+        const isEntireSelection = /\bEntire\b/i.test(locationName);
+        const isGroupFallback = !exactMatch && !isEntireSelection && requirementsSource &&
           Array.isArray(requirementsSource.locationNames) && requirementsSource.locationNames.length > 1;
         // Only count SECTION locations (exclude "Entire") for quantity division.
         // Combined quantities represent the sum across sections only, not the Entire location.
@@ -1138,9 +1191,13 @@ const RequestEventPage: React.FC = () => {
             const maxSoundQty = getPavilionSoundSystemMaxQuantity(locationName, selectedLocs, req.quantity);
             return { ...req, quantity: maxSoundQty };
           }
-          // For group-doc fallback: divide combined quantity equally per section
+          // For group-doc fallback: divide only distributed items (chairs & tables) per section
           if (isGroupFallback && groupSectionCount > 1) {
-            return { ...req, quantity: Math.floor((req.quantity || 0) / groupSectionCount) };
+            if (/(monoblock|lifetime table|tables?\s*\(long\))/i.test(req.name)) {
+              return { ...req, quantity: Math.floor((req.quantity || 0) / groupSectionCount) };
+            }
+            // Other Kagitingan logistics (microphones, mic stands, stage platforms) retain their existing quantities
+            return req;
           }
           return req;
         });
@@ -1299,10 +1356,14 @@ const RequestEventPage: React.FC = () => {
       setShowCustomLocation(false);
       handleInputChange('location', value);
 
-      // Special case: Conference Room (Entire) should behave like multi-location selection
+      // Handle multi-location combinations (e.g. Conference Entire or Section A + Section B)
       if (value === '4th Flr. Conference Room (Entire)') {
         const allRooms = ['4th Flr. Conference Room 1', '4th Flr. Conference Room 2', '4th Flr. Conference Room 3'];
         handleInputChange('locations', allRooms);
+        handleInputChange('multipleLocations', true);
+      } else if (value.includes(' + ')) {
+        const rooms = value.split('+').map((s) => s.trim()).filter(Boolean);
+        handleInputChange('locations', rooms);
         handleInputChange('multipleLocations', true);
       } else {
         // Initialize locations array with the selected location
@@ -1317,7 +1378,11 @@ const RequestEventPage: React.FC = () => {
 
       // Fetch available dates for the selected location
       await fetchAvailableDatesForLocation(
-        value === '4th Flr. Conference Room (Entire)' ? '4th Flr. Conference Room 1' : value
+        value === '4th Flr. Conference Room (Entire)'
+          ? '4th Flr. Conference Room 1'
+          : value.includes(' + ')
+            ? value.split('+')[0].trim()
+            : value
       );
 
       // Conference Room (Entire): load the grouped requirements for Rooms 1+2+3.
@@ -1672,7 +1737,7 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.'
-              : 'If used outside PGB, this needs dismantling â€” please coordinate with PGSO for transportation.',
+              : 'If used outside PGB, this needs dismantling "” please coordinate with PGSO for transportation.',
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
@@ -1686,7 +1751,7 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.' 
-              : 'If used outside PGB, this needs dismantling â€” please coordinate with PGSO for transportation.',
+              : 'If used outside PGB, this needs dismantling "” please coordinate with PGSO for transportation.',
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
@@ -1721,7 +1786,7 @@ const RequestEventPage: React.FC = () => {
             name: 'TV',
             selected: false,
             notes: '',
-            availabilityNotes: 'If used outside PGB, this needs dismantling â€” please coordinate with PGSO for transportation.',
+            availabilityNotes: 'If used outside PGB, this needs dismantling "” please coordinate with PGSO for transportation.',
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
@@ -2780,7 +2845,7 @@ const RequestEventPage: React.FC = () => {
     if (formData.eventType === 'simple-meeting') {
       if (!noDepartmentsNeeded) {
         if (!formData.taggedDepartments.length) {
-          blockers.push('Tag at least 1 department (or check â€œNo departments neededâ€)');
+          blockers.push('Tag at least 1 department (or check “No departments needed”)');
         }
         if (formData.taggedDepartments.length > 0 && !hasRequirementsForDepartments()) {
           blockers.push('Select at least 1 requirement for your tagged department(s)');
@@ -3643,7 +3708,7 @@ const RequestEventPage: React.FC = () => {
 
       const dateRange = buildDateRange(autoSuggestStartDate, autoSuggestEndDate);
 
-      // Venue max-capacity overrides â€” for venues whose physical capacity exceeds
+      // Venue max-capacity overrides "” for venues whose physical capacity exceeds
       // the default equipment quantity in requirements (e.g. BPC has ~750 default
       // chairs on-hand but can physically seat up to 5 000 pax).
       const VENUE_MAX_CAPACITY: Record<string, number> = {
@@ -3653,9 +3718,9 @@ const RequestEventPage: React.FC = () => {
       // Helper: extract TOTAL chair count for a location by summing ALL
       // chair-type requirements (e.g. Monoblock chairs + Tiffany chairs + Chairs).
       // Returns { total, capacity, breakdown }
-      //   total    â€” actual default chairs from requirements doc
-      //   capacity â€” max pax the venue can hold (may be larger than total due to override)
-      //   breakdown â€” human-readable note shown on the venue card
+      //   total    "” actual default chairs from requirements doc
+      //   capacity "” max pax the venue can hold (may be larger than total due to override)
+      //   breakdown "” human-readable note shown on the venue card
       const extractChairs = (locName: string): { total: number; capacity: number; breakdown: string } => {
         const exactDoc = allLocReqs.find((doc: any) => {
           if (doc.locationNames && Array.isArray(doc.locationNames)) {
@@ -3702,7 +3767,7 @@ const RequestEventPage: React.FC = () => {
       // â”€â”€ Shared Pavilion pool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // ALL Pavilion locations (Kalayaan Entire + all Kagitingan sections) draw
       // from a single shared inventory pool of chairs/tables.
-      // Find the overall Pavilion requirements doc â€” it should cover all Pavilion
+      // Find the overall Pavilion requirements doc "” it should cover all Pavilion
       // location names (or at minimum the Kagitingan sections + Kalayaan).
       const ALL_PAVILION_LOCATIONS = [
         'Pavilion - Kagitingan Hall - Section A',
@@ -3795,12 +3860,13 @@ const RequestEventPage: React.FC = () => {
         if (/Pavilion.*Kagitingan.*Section [ABC]$/i.test(loc.name)) return;
         if (/Pavilion.*Kalayaan.*Section [ABC]$/i.test(loc.name)) return;
 
-        const isPavilionLoc = /Pavilion/i.test(loc.name);
+        // Only Kagitingan Hall uses the shared remaining pool.
+        // Kalayaan Ballroom is a standalone room with its own 250 Tiffany chairs!
+        const isKagitinganEntire = /Pavilion.*Kagitingan.*Entire/i.test(loc.name);
 
         let chairs: number;
         let breakdown: string;
-        if (isPavilionLoc) {
-          // Use shared remaining pool for all Pavilion locations (Kalayaan Entire, Kagitingan Entire, etc.)
+        if (isKagitinganEntire) {
           chairs = pavilionRemainingChairs;
           breakdown = pavilionRemainingChairs < pavilionPoolChairs
             ? `${pavilionRemainingChairs} of ${pavilionPoolChairs} chairs available (shared pool)`
@@ -3811,7 +3877,7 @@ const RequestEventPage: React.FC = () => {
           // for filtering, but show total chairs + a capacity note on the card.
           chairs = extracted.capacity;
           breakdown = extracted.capacity > extracted.total && extracted.total > 0
-            ? `${extracted.total} default chairs Â· up to ${extracted.capacity.toLocaleString()} pax capacity`
+            ? `${extracted.total} default chairs · up to ${extracted.capacity.toLocaleString()} pax capacity`
             : extracted.capacity > extracted.total && extracted.total === 0
               ? `up to ${extracted.capacity.toLocaleString()} pax capacity`
               : extracted.breakdown;
@@ -3829,7 +3895,7 @@ const RequestEventPage: React.FC = () => {
         });
       });
 
-      // 2) Conference room combos â€” additive chairs per room from API
+      // 2) Conference room combos "” additive chairs per room from API
       const CR = [
         '4th Flr. Conference Room 1',
         '4th Flr. Conference Room 2',
@@ -3858,19 +3924,19 @@ const RequestEventPage: React.FC = () => {
           results.push({
             name: label, chairs: totalChairs, isMulti: combo.length > 1, rooms: combo,
             note: combo.length > 1
-              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} Â· ${totalChairs} chairs`
+              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} · ${totalChairs} chairs`
               : undefined,
             isBooked: allBookedDates.length > 0, bookedOnDates: allBookedDates,
           });
         }
       }
 
-      // 3) Pavilion - Kagitingan Hall sections (A, B, C â€” individually bookable)
-      // Chairs come from the SAME shared Pavilion pool as Kalayaan â€” already computed
+      // 3) Pavilion - Kagitingan Hall sections (A, B, C "” individually bookable)
+      // Chairs come from the SAME shared Pavilion pool as Kalayaan "” already computed
       // above as `pavilionRemainingChairs`. We just need section-level booking checks
       // (to mark a specific section as "Booked" if the slot is taken) and filter by
       // the remaining shared pool vs. participant count.
-      // Kalayaan has no sections â€” it is Entire-only and already handled in step 1.
+      // Kalayaan has no sections "” it is Entire-only and already handled in step 1.
       if (pavilionPoolChairs > 0) {
         const KAGITINGAN_SECTIONS = [
           'Pavilion - Kagitingan Hall - Section A',
@@ -3904,11 +3970,11 @@ const RequestEventPage: React.FC = () => {
             const sectionCount = combo.length;
             let seatsLabel: string;
             if (sectionCount === 1) {
-              seatsLabel = 'approx 50â€“100 seats';
+              seatsLabel = 'approx 50"“100 seats';
             } else if (sectionCount === 2) {
-              seatsLabel = 'approx 100â€“200 seats';
+              seatsLabel = 'approx 100"“200 seats';
             } else {
-              seatsLabel = 'approx 150â€“300 seats';
+              seatsLabel = 'approx 150"“300 seats';
             }
 
             results.push({
@@ -3957,13 +4023,18 @@ const RequestEventPage: React.FC = () => {
 
     let primaryLocation: string;
     if (isKagitinganCombo) {
-      // All three sections -> use Entire; otherwise first section directly
+      // All three sections -> Entire; 2 sections -> combined string; 1 section -> single section
       primaryLocation = sug.rooms.length === 3
         ? 'Pavilion - Kagitingan Hall (Entire)'
-        : sug.rooms[0];
+        : sug.rooms.length > 1
+          ? sug.rooms.join(' + ')
+          : sug.rooms[0];
     } else {
       primaryLocation = sug.isMulti && sug.rooms.length === 3
-        ? '4th Flr. Conference Room (Entire)' : sug.rooms[0];
+        ? '4th Flr. Conference Room (Entire)'
+        : sug.isMulti && sug.rooms.length > 1
+          ? sug.rooms.join(' + ')
+          : sug.rooms[0];
     }
 
     // Populate the participants field in Step 1 with the value entered in auto-suggest
@@ -3978,12 +4049,14 @@ const RequestEventPage: React.FC = () => {
       autoSuggestEndDate ?? undefined
     );
 
-    // For multi-room combos (2 or more rooms) override the locations array and fetch requirements dynamically
+    // For multi-room combos (2 or more rooms) override the locations array and fetch requirements dynamically.
+    // We use a slightly longer delay to ensure handleLocationChange (which is async) has finished first.
     if (sug.isMulti && sug.rooms.length >= 2) {
-      setTimeout(async () => {
-        const combinedLocStr = sug.rooms.join(' + ');
-        handleInputChange('locations', sug.rooms);
-        handleInputChange('multipleLocations', true);
+      const combinedLocStr = sug.rooms.join(' + ');
+      handleInputChange('locations', sug.rooms);
+      handleInputChange('multipleLocations', true);
+      // Use Promise to run after handleLocationChange async work settles
+      Promise.resolve().then(async () => {
         try {
           const locationData = await fetchLocationRequirements(combinedLocStr);
           if (locationData && locationData.requirements && locationData.requirements.length > 0) {
@@ -3993,7 +4066,7 @@ const RequestEventPage: React.FC = () => {
         } catch (error) {
           console.error('Error fetching combined requirements for auto-suggest:', error);
         }
-      }, 50);
+      });
     }
 
     if (autoSuggestStartDate) {
@@ -4021,7 +4094,7 @@ const RequestEventPage: React.FC = () => {
         setShowLocationRequirementsModal(true);
       }, 120);
     } else {
-      // No dates pre-filled â€” go straight to requirements then schedule
+      // No dates pre-filled "” go straight to requirements then schedule
       setShowLocationRequirementsModal(true);
     }
   };
@@ -4192,7 +4265,7 @@ const RequestEventPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    {/* Location label â€” clean, no toggle here */}
+                    {/* Location label "” clean, no toggle here */}
                     <Label htmlFor="location" className="text-sm font-medium">
                       Location <span className="text-red-500">*</span>
                     </Label>
@@ -4247,7 +4320,7 @@ const RequestEventPage: React.FC = () => {
                                             <MapPin className="w-3 h-3 text-blue-500" />
                                             {location.name}
                                             {isKagitinganSection && (
-                                              <span className="text-[10px] text-gray-400 ml-1 whitespace-nowrap">~50â€“100 seats</span>
+                                              <span className="text-[10px] text-gray-400 ml-1 whitespace-nowrap">~50"“100 seats</span>
                                             )}
                                           </div>
                                         </SelectItem>
@@ -4413,7 +4486,7 @@ const RequestEventPage: React.FC = () => {
                       </div> */}
                     {/* )} */}
 
-                    {/* â”€â”€ Manual / Auto Suggest toggle â€” below the dropdown â”€â”€ */}
+                    {/* â”€â”€ Manual / Auto Suggest toggle "” below the dropdown â”€â”€ */}
                     <div className="mt-2 space-y-2">
                       <div className="flex items-center gap-2">
                         {/* Manual button - COMMENTED OUT to force users to use Auto Suggest */}
@@ -4939,11 +5012,11 @@ const RequestEventPage: React.FC = () => {
                                     <FileText className="w-3 h-3 text-gray-500" />
                                     <span className="font-medium">{deptRequirements.length} requirement(s)</span>
                                     {notesCount > 0 && (
-                                      <span className="text-gray-500">â€¢ {notesCount} with notes</span>
+                                      <span className="text-gray-500">"¢ {notesCount} with notes</span>
                                     )}
                                     {zeroAvailabilityCount > 0 && (
                                       <span className="text-red-600 font-medium flex items-center gap-1">
-                                        â€¢ <AlertTriangle className="w-3 h-3" /> {zeroAvailabilityCount} with 0 qty
+                                        "¢ <AlertTriangle className="w-3 h-3" /> {zeroAvailabilityCount} with 0 qty
                                       </span>
                                     )}
                                   </div>
@@ -6362,6 +6435,14 @@ const RequestEventPage: React.FC = () => {
                                   const nextLocs = [...kagitinganOnly, section];
                                   handleInputChange('locations', nextLocs);
                                   handleInputChange('multipleLocations', nextLocs.length > 1);
+                                  const combinedLocStr = nextLocs.length === 3
+                                    ? 'Pavilion - Kagitingan Hall (Entire)'
+                                    : nextLocs.join(' + ');
+                                  const locationData = await fetchLocationRequirements(combinedLocStr);
+                                  if (locationData && locationData.requirements) {
+                                    setLocationRequirements(locationData.requirements);
+                                    setSelectedLocation(combinedLocStr);
+                                  }
                                 }
                               }}
                               className={`text-xs h-8 px-3 ${unavailable ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-50'}`}
@@ -6395,6 +6476,14 @@ const RequestEventPage: React.FC = () => {
                                   const nextLocs = [...kagitinganOnly, section];
                                   handleInputChange('locations', nextLocs);
                                   handleInputChange('multipleLocations', nextLocs.length > 1);
+                                  const combinedLocStr = nextLocs.length === 3
+                                    ? 'Pavilion - Kagitingan Hall (Entire)'
+                                    : nextLocs.join(' + ');
+                                  const locationData = await fetchLocationRequirements(combinedLocStr);
+                                  if (locationData && locationData.requirements) {
+                                    setLocationRequirements(locationData.requirements);
+                                    setSelectedLocation(combinedLocStr);
+                                  }
                                 }
                               }}
                               className={`text-xs h-8 px-3 ${unavailable ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-50'}`}
@@ -6428,6 +6517,14 @@ const RequestEventPage: React.FC = () => {
                                   const nextLocs = [...kagitinganOnly, section];
                                   handleInputChange('locations', nextLocs);
                                   handleInputChange('multipleLocations', nextLocs.length > 1);
+                                  const combinedLocStr = nextLocs.length === 3
+                                    ? 'Pavilion - Kagitingan Hall (Entire)'
+                                    : nextLocs.join(' + ');
+                                  const locationData = await fetchLocationRequirements(combinedLocStr);
+                                  if (locationData && locationData.requirements) {
+                                    setLocationRequirements(locationData.requirements);
+                                    setSelectedLocation(combinedLocStr);
+                                  }
                                 }
                               }}
                               className={`text-xs h-8 px-3 ${unavailable ? 'opacity-60 cursor-not-allowed' : 'hover:bg-gray-50'}`}
@@ -6447,31 +6544,7 @@ const RequestEventPage: React.FC = () => {
                   </div>
                 )}
 
-              {/* Multi-Pavilion Section Selection - Kalayaan Ballroom */}
-              {(formData.location === 'Pavilion - Kalayaan Ballroom - Section A' ||
-                formData.location === 'Pavilion - Kalayaan Ballroom - Section B' ||
-                formData.location === 'Pavilion - Kalayaan Ballroom - Section C') && (
-                  <div className="mt-4 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                    {/* Header */}
-                    <div className="flex items-center gap-2 mb-3">
-                      <Info className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                      <p className="text-sm font-medium text-gray-900">Need Multiple Kalayaan Ballroom Sections?</p>
-                    </div>
-
-                    {/* Selected Sections */}
-                    {formData.locations.length > 0 && (
-                      <div className="mb-3 flex flex-wrap gap-2">
-                        {formData.locations.map((loc) => (
-                          <Badge key={loc} variant="secondary" className="text-xs flex items-center gap-1.5 px-2.5 py-1">
-                            {loc}
-                            {formData.locations.length > 1 && (
-                              <button
-                                onClick={() => handleRemoveConferenceRoom(loc)}
-                                className="hover:text-red-600 transition-colors"
-                              >
-                                <X className="w-3.5 h-3.5" />
-                              </button>
-                            )}
+              
                           </Badge>
                         ))}
                       </div>
@@ -7076,7 +7149,7 @@ const RequestEventPage: React.FC = () => {
                         .filter(slot => slot.startTime && slot.endTime)
                         .map((slot, idx) => (
                           <p key={slot.id} className="text-xs">
-                            â€¢ Day {idx + 2}: {format(slot.date, "PPP")} at {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                            "¢ Day {idx + 2}: {format(slot.date, "PPP")} at {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                           </p>
                         ))}
                     </div>
@@ -8817,7 +8890,7 @@ const RequestEventPage: React.FC = () => {
 
               {/* Text */}
               <p className="text-sm font-semibold text-gray-800 tracking-tight mb-1">
-                Finding suitable venuesâ€¦
+                Finding suitable venues"¦
               </p>
               <p className="text-xs text-gray-400 text-center leading-relaxed">
                 Scanning availability for{' '}
@@ -8939,7 +9012,7 @@ const RequestEventPage: React.FC = () => {
                 <div className="flex items-center gap-2 text-xs text-violet-700 bg-violet-50 border border-violet-100 rounded-lg px-3 py-2">
                   <Info className="w-3 h-3 flex-shrink-0" />
                   <span>
-                    <strong>{buildDateRange(autoSuggestStartDate, autoSuggestEndDate).length}-day event</strong> â€” venues booked on any of those days will be marked unavailable.
+                    <strong>{buildDateRange(autoSuggestStartDate, autoSuggestEndDate).length}-day event</strong> "” venues booked on any of those days will be marked unavailable.
                   </span>
                 </div>
               )}
@@ -8972,7 +9045,7 @@ const RequestEventPage: React.FC = () => {
                     onValueChange={(v) => { setAutoSuggestEndTime(v); setShowSuggestions(false); setSuggestedLocations([]); }}
                     disabled={!autoSuggestStartTime}>
                     <SelectTrigger className="h-9 text-sm bg-white border-gray-200 rounded-lg" disabled={!autoSuggestStartTime}>
-                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : 'â€”'} />
+                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : '"”'} />
                     </SelectTrigger>
                     <SelectContent className="max-h-56">
                       {generateTimeOptions()
@@ -8996,7 +9069,7 @@ const RequestEventPage: React.FC = () => {
               className="w-full h-10 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors"
             >
               {loadingAutoSuggest
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availabilityâ€¦</>
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability"¦</>
                 : <><Sparkles className="w-3.5 h-3.5" /> Find Suitable Venues</>}
             </button>
 
@@ -9012,7 +9085,7 @@ const RequestEventPage: React.FC = () => {
                     </span>
                     {suggestedLocations.filter(s => s.isBooked).length > 0 && (
                       <>
-                        <span className="text-gray-300">Â·</span>
+                        <span className="text-gray-300">·</span>
                         <span className="flex items-center gap-1 text-red-500">
                           <Ban className="w-3.5 h-3.5" />
                           {suggestedLocations.filter(s => s.isBooked).length} booked
@@ -9068,13 +9141,13 @@ const RequestEventPage: React.FC = () => {
                             </span>
                             {sug.isMulti && (
                               <>
-                                <span className="text-gray-300 text-xs">Â·</span>
+                                <span className="text-gray-300 text-xs">·</span>
                                 <span className="text-xs text-violet-500 font-medium">Multi-room</span>
                               </>
                             )}
                             {sug.note && (
                               <>
-                                <span className="text-gray-300 text-xs">Â·</span>
+                                <span className="text-gray-300 text-xs">·</span>
                                 <span className="text-xs text-gray-400 truncate">{sug.note}</span>
                               </>
                             )}
@@ -9094,9 +9167,9 @@ const RequestEventPage: React.FC = () => {
                               <CalendarIcon className="w-2.5 h-2.5 flex-shrink-0" />
                               {format(autoSuggestStartDate, 'MMM dd')}
                               {autoSuggestEndDate && autoSuggestEndDate.getTime() !== autoSuggestStartDate.getTime()
-                                ? ` â€“ ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
+                                ? ` "“ ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
                                 : `, ${format(autoSuggestStartDate, 'yyyy')}`}
-                              {autoSuggestStartTime && ` Â· ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` â€“ ${formatTime(autoSuggestEndTime)}` : ''}`}
+                              {autoSuggestStartTime && ` · ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` "“ ${formatTime(autoSuggestEndTime)}` : ''}`}
                             </p>
                           )}
                         </div>
