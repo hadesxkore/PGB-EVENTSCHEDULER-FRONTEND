@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -153,7 +153,7 @@ type AutoSuggestedLocation = {
   bookedOnDates: string[];
   seatsLabel?: string;
 };
-// ─────────────────────────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const RequestEventPage: React.FC = () => {
   const navigate = useNavigate();
@@ -217,7 +217,7 @@ const RequestEventPage: React.FC = () => {
   const [showPitoBlockAlert, setShowPitoBlockAlert] = useState(false);
   const [pitoBlockMessage, setPitoBlockMessage] = useState('');
 
-  // ── Auto Suggest Location state ────────────────────────────────────────────
+  // â”€â”€ Auto Suggest Location state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [locationMode, setLocationMode] = useState<'manual' | 'auto-suggest'>('auto-suggest');
   const [showAutoSuggestModal, setShowAutoSuggestModal] = useState(false);
   const [autoSuggestParticipants, setAutoSuggestParticipants] = useState('');
@@ -229,7 +229,7 @@ const RequestEventPage: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
   const [loadingAutoSuggest, setLoadingAutoSuggest] = useState(false);
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [loadingLocationRequirements, setLoadingLocationRequirements] = useState(false);
   const [loadingDepartmentRequirements, setLoadingDepartmentRequirements] = useState(false);
   const [locationRoomTypes, setLocationRoomTypes] = useState<string[]>([]);
@@ -1115,10 +1115,23 @@ const RequestEventPage: React.FC = () => {
             ? roomTypesSource.roomTypes
             : [];
 
+        // If the requirements came from a GROUP doc (multi-location) but only ONE section
+        // was selected, divide the combined totals by the number of sections in the group.
+        // This handles Kagitingan Hall Section A/B/C each getting 1/3 of the combined qty
+        // (e.g. 300 Monoblock Chairs -> 100 per section, 30 Tables -> 10, etc.)
+        // Sound System is handled separately via getPavilionSoundSystemMaxQuantity.
+        const isGroupFallback = !exactMatch && requirementsSource &&
+          Array.isArray(requirementsSource.locationNames) && requirementsSource.locationNames.length > 1;
+        const groupSectionCount = isGroupFallback ? (requirementsSource.locationNames as string[]).length : 1;
+
         const adjustedRequirements = requirements.map((req: any) => {
           if (/sound system/i.test(req.name)) {
             const maxSoundQty = getPavilionSoundSystemMaxQuantity(locationName, selectedLocs, req.quantity);
             return { ...req, quantity: maxSoundQty };
+          }
+          // For group-doc fallback: divide combined quantity equally per section
+          if (isGroupFallback && groupSectionCount > 1) {
+            return { ...req, quantity: Math.floor((req.quantity || 0) / groupSectionCount) };
           }
           return req;
         });
@@ -1650,7 +1663,7 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.'
-              : 'If used outside PGB, this needs dismantling — please coordinate with PGSO for transportation.',
+              : 'If used outside PGB, this needs dismantling â€” please coordinate with PGSO for transportation.',
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
@@ -1664,7 +1677,7 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.' 
-              : 'If used outside PGB, this needs dismantling — please coordinate with PGSO for transportation.',
+              : 'If used outside PGB, this needs dismantling â€” please coordinate with PGSO for transportation.',
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
@@ -1699,7 +1712,7 @@ const RequestEventPage: React.FC = () => {
             name: 'TV',
             selected: false,
             notes: '',
-            availabilityNotes: 'If used outside PGB, this needs dismantling — please coordinate with PGSO for transportation.',
+            availabilityNotes: 'If used outside PGB, this needs dismantling â€” please coordinate with PGSO for transportation.',
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
@@ -2758,7 +2771,7 @@ const RequestEventPage: React.FC = () => {
     if (formData.eventType === 'simple-meeting') {
       if (!noDepartmentsNeeded) {
         if (!formData.taggedDepartments.length) {
-          blockers.push('Tag at least 1 department (or check “No departments needed”)');
+          blockers.push('Tag at least 1 department (or check â€œNo departments neededâ€)');
         }
         if (formData.taggedDepartments.length > 0 && !hasRequirementsForDepartments()) {
           blockers.push('Select at least 1 requirement for your tagged department(s)');
@@ -3111,10 +3124,10 @@ const RequestEventPage: React.FC = () => {
         throw new Error(lastResponse?.data?.message || 'Submission failed');
       }
     } catch (error: any) {
-      console.error('❌ [EVENT SUBMISSION] Error:', error);
-      console.error('❌ [EVENT SUBMISSION] Error code:', error.code);
-      console.error('❌ [EVENT SUBMISSION] Error response:', error.response);
-      console.error('❌ [EVENT SUBMISSION] Error message:', error.message);
+      console.error('âŒ [EVENT SUBMISSION] Error:', error);
+      console.error('âŒ [EVENT SUBMISSION] Error code:', error.code);
+      console.error('âŒ [EVENT SUBMISSION] Error response:', error.response);
+      console.error('âŒ [EVENT SUBMISSION] Error message:', error.message);
 
       // Dismiss loading toast if it exists
       if (uploadToastId) {
@@ -3144,7 +3157,7 @@ const RequestEventPage: React.FC = () => {
         if (serverError) {
           // Strip Mongoose "Event validation failed: " prefix
           const cleanError = serverError.replace(/^Event validation failed:\s*/i, '');
-          // Prettify field names like "contactEmail" → "Contact Email"
+          // Prettify field names like "contactEmail" â†’ "Contact Email"
           const prettifyField = (field: string) =>
             field.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim();
           // Split multiple validation errors (separated by ", fieldName:")
@@ -3529,7 +3542,7 @@ const RequestEventPage: React.FC = () => {
     return errors;
   };
 
-  // ── Auto Suggest: helpers & logic ─────────────────────────────────────────
+  // â”€â”€ Auto Suggest: helpers & logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // Build every calendar date between start and end (inclusive)
   const buildDateRange = (start: Date, end: Date): Date[] => {
@@ -3582,11 +3595,11 @@ const RequestEventPage: React.FC = () => {
             if (slot) { evStart = slot.startTime || null; evEnd = slot.endTime || null; }
           }
 
-          // If we have time info on both sides → time-overlap check
+          // If we have time info on both sides â†’ time-overlap check
           if (selStart !== null && selEnd !== null && evStart && evEnd) {
             return selStart < toMin(evEnd) && selEnd > toMin(evStart);
           }
-          // No time info → date-level block
+          // No time info â†’ date-level block
           return !!evStart || mainDay === dayStr;
         });
       })
@@ -3621,7 +3634,7 @@ const RequestEventPage: React.FC = () => {
 
       const dateRange = buildDateRange(autoSuggestStartDate, autoSuggestEndDate);
 
-      // Venue max-capacity overrides — for venues whose physical capacity exceeds
+      // Venue max-capacity overrides â€” for venues whose physical capacity exceeds
       // the default equipment quantity in requirements (e.g. BPC has ~750 default
       // chairs on-hand but can physically seat up to 5 000 pax).
       const VENUE_MAX_CAPACITY: Record<string, number> = {
@@ -3631,9 +3644,9 @@ const RequestEventPage: React.FC = () => {
       // Helper: extract TOTAL chair count for a location by summing ALL
       // chair-type requirements (e.g. Monoblock chairs + Tiffany chairs + Chairs).
       // Returns { total, capacity, breakdown }
-      //   total    — actual default chairs from requirements doc
-      //   capacity — max pax the venue can hold (may be larger than total due to override)
-      //   breakdown — human-readable note shown on the venue card
+      //   total    â€” actual default chairs from requirements doc
+      //   capacity â€” max pax the venue can hold (may be larger than total due to override)
+      //   breakdown â€” human-readable note shown on the venue card
       const extractChairs = (locName: string): { total: number; capacity: number; breakdown: string } => {
         const exactDoc = allLocReqs.find((doc: any) => {
           if (doc.locationNames && Array.isArray(doc.locationNames)) {
@@ -3677,10 +3690,10 @@ const RequestEventPage: React.FC = () => {
         return { total, capacity, breakdown };
       };
 
-      // ── Shared Pavilion pool ───────────────────────────────────────────────
+      // â”€â”€ Shared Pavilion pool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // ALL Pavilion locations (Kalayaan Entire + all Kagitingan sections) draw
       // from a single shared inventory pool of chairs/tables.
-      // Find the overall Pavilion requirements doc — it should cover all Pavilion
+      // Find the overall Pavilion requirements doc â€” it should cover all Pavilion
       // location names (or at minimum the Kagitingan sections + Kalayaan).
       const ALL_PAVILION_LOCATIONS = [
         'Pavilion - Kagitingan Hall - Section A',
@@ -3761,7 +3774,7 @@ const RequestEventPage: React.FC = () => {
       };
 
       const pavilionRemainingChairs = getPavilionRemainingChairs();
-      // ──────────────────────────────────────────────────────────────────────
+      // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
       const results: AutoSuggestedLocation[] = [];
 
@@ -3789,7 +3802,7 @@ const RequestEventPage: React.FC = () => {
           // for filtering, but show total chairs + a capacity note on the card.
           chairs = extracted.capacity;
           breakdown = extracted.capacity > extracted.total && extracted.total > 0
-            ? `${extracted.total} default chairs · up to ${extracted.capacity.toLocaleString()} pax capacity`
+            ? `${extracted.total} default chairs Â· up to ${extracted.capacity.toLocaleString()} pax capacity`
             : extracted.capacity > extracted.total && extracted.total === 0
               ? `up to ${extracted.capacity.toLocaleString()} pax capacity`
               : extracted.breakdown;
@@ -3807,7 +3820,7 @@ const RequestEventPage: React.FC = () => {
         });
       });
 
-      // 2) Conference room combos — additive chairs per room from API
+      // 2) Conference room combos â€” additive chairs per room from API
       const CR = [
         '4th Flr. Conference Room 1',
         '4th Flr. Conference Room 2',
@@ -3836,19 +3849,19 @@ const RequestEventPage: React.FC = () => {
           results.push({
             name: label, chairs: totalChairs, isMulti: combo.length > 1, rooms: combo,
             note: combo.length > 1
-              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} · ${totalChairs} chairs`
+              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} Â· ${totalChairs} chairs`
               : undefined,
             isBooked: allBookedDates.length > 0, bookedOnDates: allBookedDates,
           });
         }
       }
 
-      // 3) Pavilion - Kagitingan Hall sections (A, B, C — individually bookable)
-      // Chairs come from the SAME shared Pavilion pool as Kalayaan — already computed
+      // 3) Pavilion - Kagitingan Hall sections (A, B, C â€” individually bookable)
+      // Chairs come from the SAME shared Pavilion pool as Kalayaan â€” already computed
       // above as `pavilionRemainingChairs`. We just need section-level booking checks
       // (to mark a specific section as "Booked" if the slot is taken) and filter by
       // the remaining shared pool vs. participant count.
-      // Kalayaan has no sections — it is Entire-only and already handled in step 1.
+      // Kalayaan has no sections â€” it is Entire-only and already handled in step 1.
       if (pavilionPoolChairs > 0) {
         const KAGITINGAN_SECTIONS = [
           'Pavilion - Kagitingan Hall - Section A',
@@ -3882,11 +3895,11 @@ const RequestEventPage: React.FC = () => {
             const sectionCount = combo.length;
             let seatsLabel: string;
             if (sectionCount === 1) {
-              seatsLabel = 'approx 50–100 seats';
+              seatsLabel = 'approx 50â€“100 seats';
             } else if (sectionCount === 2) {
-              seatsLabel = 'approx 100–200 seats';
+              seatsLabel = 'approx 100â€“200 seats';
             } else {
-              seatsLabel = 'approx 150–300 seats';
+              seatsLabel = 'approx 150â€“300 seats';
             }
 
             results.push({
@@ -3999,11 +4012,11 @@ const RequestEventPage: React.FC = () => {
         setShowLocationRequirementsModal(true);
       }, 120);
     } else {
-      // No dates pre-filled — go straight to requirements then schedule
+      // No dates pre-filled â€” go straight to requirements then schedule
       setShowLocationRequirementsModal(true);
     }
   };
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4 md:space-y-6">
@@ -4170,7 +4183,7 @@ const RequestEventPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    {/* Location label — clean, no toggle here */}
+                    {/* Location label â€” clean, no toggle here */}
                     <Label htmlFor="location" className="text-sm font-medium">
                       Location <span className="text-red-500">*</span>
                     </Label>
@@ -4225,7 +4238,7 @@ const RequestEventPage: React.FC = () => {
                                             <MapPin className="w-3 h-3 text-blue-500" />
                                             {location.name}
                                             {isKagitinganSection && (
-                                              <span className="text-[10px] text-gray-400 ml-1 whitespace-nowrap">~50–100 seats</span>
+                                              <span className="text-[10px] text-gray-400 ml-1 whitespace-nowrap">~50â€“100 seats</span>
                                             )}
                                           </div>
                                         </SelectItem>
@@ -4391,7 +4404,7 @@ const RequestEventPage: React.FC = () => {
                       </div> */}
                     {/* )} */}
 
-                    {/* ── Manual / Auto Suggest toggle — below the dropdown ── */}
+                    {/* â”€â”€ Manual / Auto Suggest toggle â€” below the dropdown â”€â”€ */}
                     <div className="mt-2 space-y-2">
                       <div className="flex items-center gap-2">
                         {/* Manual button - COMMENTED OUT to force users to use Auto Suggest */}
@@ -4625,12 +4638,12 @@ const RequestEventPage: React.FC = () => {
                 <div className="mb-2">
                   {formData.eventType === 'simple-meeting' ? (
                     formData.withoutGov ? (
-                      <p className="text-sm text-gray-600">📎 <strong>Attachments are required</strong> - w/ Governor is enabled</p>
+                      <p className="text-sm text-gray-600">ðŸ“Ž <strong>Attachments are required</strong> - w/ Governor is enabled</p>
                     ) : (
-                      <p className="text-sm text-gray-500">📎 Attachments are optional for Simple Meeting without Governor</p>
+                      <p className="text-sm text-gray-500">ðŸ“Ž Attachments are optional for Simple Meeting without Governor</p>
                     )
                   ) : (
-                    <p className="text-sm text-gray-600">📎 <strong>Attachments are required</strong> - Please upload at least one file</p>
+                    <p className="text-sm text-gray-600">ðŸ“Ž <strong>Attachments are required</strong> - Please upload at least one file</p>
                   )}
                 </div>
 
@@ -4764,7 +4777,7 @@ const RequestEventPage: React.FC = () => {
                       />
                       <div className="flex-1">
                         <Label htmlFor="pgsoCustomLocationAck" className="text-sm font-medium text-green-900">
-                          ✓ Custom location acknowledged
+                          âœ“ Custom location acknowledged
                         </Label>
                         <p className="text-xs text-green-700 mt-1">
                           Since you selected a custom location (Outside PGB), please contact PGSO directly for any requirements needed at this venue.
@@ -4805,7 +4818,7 @@ const RequestEventPage: React.FC = () => {
                           : "border-amber-400 text-amber-900 hover:bg-amber-100 gap-1.5 font-medium"
                         }
                       >
-                        {formData.proceedWithoutPgsoChairs ? "✓ Proceeding Without PGSO Chairs" : "Proceed Without PGSO Chairs"}
+                        {formData.proceedWithoutPgsoChairs ? "âœ“ Proceeding Without PGSO Chairs" : "Proceed Without PGSO Chairs"}
                       </Button>
                       {formData.proceedWithoutPgsoChairs && (
                         <span className="text-xs font-medium text-amber-800 flex items-center gap-1">
@@ -4917,11 +4930,11 @@ const RequestEventPage: React.FC = () => {
                                     <FileText className="w-3 h-3 text-gray-500" />
                                     <span className="font-medium">{deptRequirements.length} requirement(s)</span>
                                     {notesCount > 0 && (
-                                      <span className="text-gray-500">• {notesCount} with notes</span>
+                                      <span className="text-gray-500">â€¢ {notesCount} with notes</span>
                                     )}
                                     {zeroAvailabilityCount > 0 && (
                                       <span className="text-red-600 font-medium flex items-center gap-1">
-                                        • <AlertTriangle className="w-3 h-3" /> {zeroAvailabilityCount} with 0 qty
+                                        â€¢ <AlertTriangle className="w-3 h-3" /> {zeroAvailabilityCount} with 0 qty
                                       </span>
                                     )}
                                   </div>
@@ -4987,7 +5000,7 @@ const RequestEventPage: React.FC = () => {
                                                 {req.type === 'physical' && req.quantity
                                                   ? `Requested: ${req.quantity}${req.totalQuantity !== undefined ? ` of ${req.totalQuantity}` : ''}`
                                                   : req.type === 'yesno' && req.yesNoAnswer
-                                                    ? `Answer: ${req.yesNoAnswer === 'yes' ? '✓ Yes' : '✗ No'}`
+                                                    ? `Answer: ${req.yesNoAnswer === 'yes' ? 'âœ“ Yes' : 'âœ— No'}`
                                                     : `Available: ${req.totalQuantity !== undefined ? req.totalQuantity : 'N/A'}`}
                                               </span>
                                               <span className={`flex items-center gap-1 ${
@@ -5005,7 +5018,7 @@ const RequestEventPage: React.FC = () => {
                                         </div>
                                         {hasZeroQuantity && (
                                           <div className="text-[10px] text-red-700 mt-1 font-medium">
-                                            ⚠️ This item will be removed when you continue to schedule
+                                            âš ï¸ This item will be removed when you continue to schedule
                                           </div>
                                         )}
                                         {req.responsiblePerson && (
@@ -5482,12 +5495,12 @@ const RequestEventPage: React.FC = () => {
                 </DialogDescription>
                 {!formData.startDate && (
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
-                    ⚠️ No date selected - showing default quantities. Set schedule first for accurate availability.
+                    âš ï¸ No date selected - showing default quantities. Set schedule first for accurate availability.
                   </div>
                 )}
                 {formData.startDate && (
                   <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 text-xs">
-                    📅 Showing availability for {formData.startDate.toDateString()}
+                    ðŸ“… Showing availability for {formData.startDate.toDateString()}
                   </div>
                 )}
               </div>
@@ -5495,16 +5508,16 @@ const RequestEventPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  console.log(`\n🔄 === EDIT SCHEDULE BUTTON CLICKED ===`);
-                  console.log(`📍 Current formData.location: ${formData.location}`);
-                  console.log(`📍 Current selectedLocation: ${selectedLocation}`);
-                  console.log(`🎯 Current showRequirementsModal: ${showRequirementsModal}`);
-                  console.log(`🎯 Current showScheduleModal: ${showScheduleModal}`);
+                  console.log(`\nðŸ”„ === EDIT SCHEDULE BUTTON CLICKED ===`);
+                  console.log(`ðŸ“ Current formData.location: ${formData.location}`);
+                  console.log(`ðŸ“ Current selectedLocation: ${selectedLocation}`);
+                  console.log(`ðŸŽ¯ Current showRequirementsModal: ${showRequirementsModal}`);
+                  console.log(`ðŸŽ¯ Current showScheduleModal: ${showScheduleModal}`);
 
                   setShowRequirementsModal(false);
                   setShowScheduleModal(true);
 
-                  console.log(`✅ Modals switched - Requirements: false, Schedule: true`);
+                  console.log(`âœ… Modals switched - Requirements: false, Schedule: true`);
                 }}
                 className="gap-2 ml-4"
               >
@@ -6907,7 +6920,7 @@ const RequestEventPage: React.FC = () => {
                                       </SelectTrigger>
                                       <SelectContent className="max-h-60" position="popper" sideOffset={5}>
                                         {generateTimeOptions().map((timeOption) => {
-                                          console.log('🎯 START TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
+                                          console.log('ðŸŽ¯ START TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
                                           const isBooked = isTimeSlotBooked(timeOption.value, date);
                                           const requirementConflict = hasRequirementConflictAtTime(timeOption.value, date);
 
@@ -6981,7 +6994,7 @@ const RequestEventPage: React.FC = () => {
                                           // must not overlap/bridge across booked venue intervals
                                           return !isVenueRangeBooked(slot.startTime, t.value, date);
                                         }).map((timeOption) => {
-                                          console.log('🎯 END TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
+                                          console.log('ðŸŽ¯ END TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
                                           const isBooked = isTimeSlotBooked(timeOption.value, date);
                                           const requirementConflict = hasRequirementConflictAtTime(timeOption.value, date);
 
@@ -7054,7 +7067,7 @@ const RequestEventPage: React.FC = () => {
                         .filter(slot => slot.startTime && slot.endTime)
                         .map((slot, idx) => (
                           <p key={slot.id} className="text-xs">
-                            • Day {idx + 2}: {format(slot.date, "PPP")} at {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                            â€¢ Day {idx + 2}: {format(slot.date, "PPP")} at {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
                           </p>
                         ))}
                     </div>
@@ -8419,7 +8432,7 @@ const RequestEventPage: React.FC = () => {
                       <span className="text-sm font-medium text-gray-700">{req.name}</span>
                     </div>
                     <Badge variant="outline" className="bg-white text-blue-700 border-blue-300">
-                      ×{req.quantity}
+                      Ã—{req.quantity}
                     </Badge>
                   </div>
                 ))}
@@ -8768,7 +8781,7 @@ const RequestEventPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ── Auto Suggest Location Modal ──────────────────────────────────────── */}
+      {/* â”€â”€ Auto Suggest Location Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <Dialog
         open={showAutoSuggestModal}
         onOpenChange={(open) => {
@@ -8778,7 +8791,7 @@ const RequestEventPage: React.FC = () => {
       >
         <DialogContent className="sm:max-w-xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
 
-          {/* ── Venue Search Loading Overlay (inside modal) ── */}
+          {/* â”€â”€ Venue Search Loading Overlay (inside modal) â”€â”€ */}
           {loadingAutoSuggest && (
             <div className="absolute inset-0 z-50 flex flex-col items-center justify-center rounded-2xl bg-white/90 backdrop-blur-[2px]">
               {/* Spinner ring */}
@@ -8795,7 +8808,7 @@ const RequestEventPage: React.FC = () => {
 
               {/* Text */}
               <p className="text-sm font-semibold text-gray-800 tracking-tight mb-1">
-                Finding suitable venues…
+                Finding suitable venuesâ€¦
               </p>
               <p className="text-xs text-gray-400 text-center leading-relaxed">
                 Scanning availability for{' '}
@@ -8824,7 +8837,7 @@ const RequestEventPage: React.FC = () => {
             </div>
           )}
 
-          {/* ── Header ── */}
+          {/* â”€â”€ Header â”€â”€ */}
           <div className="flex-shrink-0 px-6 pt-6 pb-5">
             <div className="flex items-center gap-3 mb-1">
               <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center">
@@ -8844,10 +8857,10 @@ const RequestEventPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ── Scrollable body ── */}
+          {/* â”€â”€ Scrollable body â”€â”€ */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
 
-            {/* ── Inputs section ── */}
+            {/* â”€â”€ Inputs section â”€â”€ */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
 
               {/* Participants */}
@@ -8917,7 +8930,7 @@ const RequestEventPage: React.FC = () => {
                 <div className="flex items-center gap-2 text-xs text-violet-700 bg-violet-50 border border-violet-100 rounded-lg px-3 py-2">
                   <Info className="w-3 h-3 flex-shrink-0" />
                   <span>
-                    <strong>{buildDateRange(autoSuggestStartDate, autoSuggestEndDate).length}-day event</strong> — venues booked on any of those days will be marked unavailable.
+                    <strong>{buildDateRange(autoSuggestStartDate, autoSuggestEndDate).length}-day event</strong> â€” venues booked on any of those days will be marked unavailable.
                   </span>
                 </div>
               )}
@@ -8950,7 +8963,7 @@ const RequestEventPage: React.FC = () => {
                     onValueChange={(v) => { setAutoSuggestEndTime(v); setShowSuggestions(false); setSuggestedLocations([]); }}
                     disabled={!autoSuggestStartTime}>
                     <SelectTrigger className="h-9 text-sm bg-white border-gray-200 rounded-lg" disabled={!autoSuggestStartTime}>
-                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : '—'} />
+                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : 'â€”'} />
                     </SelectTrigger>
                     <SelectContent className="max-h-56">
                       {generateTimeOptions()
@@ -8966,7 +8979,7 @@ const RequestEventPage: React.FC = () => {
               </div>
             </div>
 
-            {/* ── Find button ── */}
+            {/* â”€â”€ Find button â”€â”€ */}
             <button
               type="button"
               disabled={!autoSuggestParticipants || !autoSuggestStartDate || !autoSuggestEndDate || loadingAutoSuggest}
@@ -8974,11 +8987,11 @@ const RequestEventPage: React.FC = () => {
               className="w-full h-10 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors"
             >
               {loadingAutoSuggest
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability…</>
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availabilityâ€¦</>
                 : <><Sparkles className="w-3.5 h-3.5" /> Find Suitable Venues</>}
             </button>
 
-            {/* ── Results ── */}
+            {/* â”€â”€ Results â”€â”€ */}
             {showSuggestions && (
               <div className="space-y-3">
                 {/* Summary bar */}
@@ -8990,7 +9003,7 @@ const RequestEventPage: React.FC = () => {
                     </span>
                     {suggestedLocations.filter(s => s.isBooked).length > 0 && (
                       <>
-                        <span className="text-gray-300">·</span>
+                        <span className="text-gray-300">Â·</span>
                         <span className="flex items-center gap-1 text-red-500">
                           <Ban className="w-3.5 h-3.5" />
                           {suggestedLocations.filter(s => s.isBooked).length} booked
@@ -9046,13 +9059,13 @@ const RequestEventPage: React.FC = () => {
                             </span>
                             {sug.isMulti && (
                               <>
-                                <span className="text-gray-300 text-xs">·</span>
+                                <span className="text-gray-300 text-xs">Â·</span>
                                 <span className="text-xs text-violet-500 font-medium">Multi-room</span>
                               </>
                             )}
                             {sug.note && (
                               <>
-                                <span className="text-gray-300 text-xs">·</span>
+                                <span className="text-gray-300 text-xs">Â·</span>
                                 <span className="text-xs text-gray-400 truncate">{sug.note}</span>
                               </>
                             )}
@@ -9072,9 +9085,9 @@ const RequestEventPage: React.FC = () => {
                               <CalendarIcon className="w-2.5 h-2.5 flex-shrink-0" />
                               {format(autoSuggestStartDate, 'MMM dd')}
                               {autoSuggestEndDate && autoSuggestEndDate.getTime() !== autoSuggestStartDate.getTime()
-                                ? ` – ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
+                                ? ` â€“ ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
                                 : `, ${format(autoSuggestStartDate, 'yyyy')}`}
-                              {autoSuggestStartTime && ` · ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` – ${formatTime(autoSuggestEndTime)}` : ''}`}
+                              {autoSuggestStartTime && ` Â· ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` â€“ ${formatTime(autoSuggestEndTime)}` : ''}`}
                             </p>
                           )}
                         </div>
@@ -9109,7 +9122,7 @@ const RequestEventPage: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-      {/* ── End Auto Suggest Modal ──────────────────────────────────────────── */}
+      {/* â”€â”€ End Auto Suggest Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
 
     </div>
   );

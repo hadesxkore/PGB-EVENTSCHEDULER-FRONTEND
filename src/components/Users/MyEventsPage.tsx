@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 
 import { motion } from 'framer-motion';
 
@@ -1014,7 +1014,7 @@ const MyEventsPage: React.FC = () => {
 
           .replace(/\s+/g, ' ')
 
-          .replace(/[’']/g, "'");
+          .replace(/[â€™']/g, "'");
 
 
 
@@ -2294,7 +2294,7 @@ const MyEventsPage: React.FC = () => {
 
 
 
-  // ── Auto Suggest: helpers & logic ─────────────────────────────────────────
+  // â”€â”€ Auto Suggest: helpers & logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   // Build every calendar date between start and end (inclusive)
   const buildDateRange = (start: Date, end: Date): Date[] => {
@@ -2460,7 +2460,7 @@ const MyEventsPage: React.FC = () => {
         return { total, capacity, breakdown };
       };
 
-      // ── Shared Pavilion pool ───────────────────────────────────────────────
+      // â”€â”€ Shared Pavilion pool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       // ALL Pavilion locations (Kalayaan Entire + all Kagitingan sections) draw
       // from a single shared inventory pool of chairs/tables.
       const ALL_PAVILION_LOCATIONS = [
@@ -2537,7 +2537,7 @@ const MyEventsPage: React.FC = () => {
       };
 
       const pavilionRemainingChairs = getPavilionRemainingChairs();
-      // ──────────────────────────────────────────────────────────────────────
+      // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
       const results: AutoSuggestedLocation[] = [];
 
@@ -2560,7 +2560,7 @@ const MyEventsPage: React.FC = () => {
           const extracted = extractChairs(loc);
           chairs = extracted.capacity;
           breakdown = extracted.capacity > extracted.total && extracted.total > 0
-            ? `${extracted.total} default chairs · up to ${extracted.capacity.toLocaleString()} pax capacity`
+            ? `${extracted.total} default chairs Â· up to ${extracted.capacity.toLocaleString()} pax capacity`
             : extracted.capacity > extracted.total && extracted.total === 0
               ? `up to ${extracted.capacity.toLocaleString()} pax capacity`
               : extracted.breakdown;
@@ -2607,14 +2607,14 @@ const MyEventsPage: React.FC = () => {
           results.push({
             name: label, chairs: totalChairs, isMulti: combo.length > 1, rooms: combo,
             note: combo.length > 1
-              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} · ${totalChairs} chairs`
+              ? `${combo.map((r) => r.replace('4th Flr. Conference Room ', 'CR')).join(' + ')} Â· ${totalChairs} chairs`
               : undefined,
             isBooked: allBookedDates.length > 0, bookedOnDates: allBookedDates,
           });
         }
       }
 
-      // 3) Pavilion - Kagitingan Hall sections (A, B, C — individually bookable)
+      // 3) Pavilion - Kagitingan Hall sections (A, B, C â€” individually bookable)
       if (pavilionPoolChairs > 0) {
         const KAGITINGAN_SECTIONS = [
           'Pavilion - Kagitingan Hall - Section A',
@@ -2644,10 +2644,10 @@ const MyEventsPage: React.FC = () => {
 
             const sectionCount = combo.length;
             const seatsLabel = sectionCount === 1
-              ? 'approx 50–100 seats'
+              ? 'approx 50â€“100 seats'
               : sectionCount === 2
-                ? 'approx 100–200 seats'
-                : 'approx 150–300 seats';
+                ? 'approx 100â€“200 seats'
+                : 'approx 150â€“300 seats';
 
             results.push({
               name: label,
@@ -2726,7 +2726,7 @@ const MyEventsPage: React.FC = () => {
     toast.success(`Applied suggestion: ${sug.name}`);
   };
 
-  // ──────────────────────────────────────────────────────────────────────────
+  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   const timeToMinutes = (time: string) => {
 
@@ -3871,71 +3871,17 @@ const MyEventsPage: React.FC = () => {
 
 
 
-      // First, get the current event data
+      // Use the dedicated edit endpoint to update quantity/notes while preserving approval status
 
-      const eventResponse = await axios.get(`${API_BASE_URL}/events/${editingRequirement.eventId}`, {
+      const response = await axios.patch(
 
-        headers: { 'Authorization': `Bearer ${token}` }
-
-      });
-
-
-
-      if (!eventResponse.data.success) {
-
-        toast.error('Failed to fetch event data');
-
-        return;
-
-      }
-
-
-
-      const event = eventResponse.data.data;
-
-      const updatedDepartmentRequirements = { ...event.departmentRequirements };
-
-
-
-      // Find and update the specific requirement
-
-      if (updatedDepartmentRequirements[editingRequirement.department]) {
-
-        const deptReqs = updatedDepartmentRequirements[editingRequirement.department];
-
-        const reqIndex = deptReqs.findIndex((r: any) => r.id === editingRequirement.id);
-
-
-
-        if (reqIndex !== -1) {
-
-          deptReqs[reqIndex] = {
-
-            ...deptReqs[reqIndex],
-
-            quantity: editRequirementData.quantity,
-
-            // DON'T update totalQuantity - that's the system's total availability!
-
-            notes: editRequirementData.notes
-
-          };
-
-        }
-
-      }
-
-
-
-      // Update the event with the modified departmentRequirements
-
-      const response = await axios.put(
-
-        `${API_BASE_URL}/events/${editingRequirement.eventId}`,
+        `${API_BASE_URL}/events/${editingRequirement.eventId}/requirements/${editingRequirement.id}/edit`,
 
         {
 
-          departmentRequirements: updatedDepartmentRequirements
+          quantity: editRequirementData.quantity,
+
+          notes: editRequirementData.notes
 
         },
 
@@ -3955,7 +3901,7 @@ const MyEventsPage: React.FC = () => {
 
 
 
-      if (response.data.success) {
+            if (response.data.success) {
 
         toast.success('Requirement updated successfully');
 
@@ -4215,7 +4161,7 @@ const MyEventsPage: React.FC = () => {
                   .toLowerCase()
                   .trim()
                   .replace(/\s+/g, ' ')
-                  .replace(/[’']/g, "'");
+                  .replace(/[â€™']/g, "'");
 
               const locationsSharePavilionPool = (a: any, b: any): boolean => {
                 const aRaw = String(a || '');
@@ -4429,7 +4375,7 @@ const MyEventsPage: React.FC = () => {
               .toLowerCase()
               .trim()
               .replace(/\s+/g, ' ')
-              .replace(/[’']/g, "'");
+              .replace(/[â€™']/g, "'");
 
           const locationsSharePavilionPool = (a: any, b: any): boolean => {
             const aRaw = String(a || '');
@@ -6726,11 +6672,9 @@ const MyEventsPage: React.FC = () => {
 
                                                   onClick={() => handleEditRequirement(req, selectedEventDepartments._id, dept)}
 
-                                                  disabled={req.status?.toLowerCase() === 'confirmed'}
+                                                  className="h-7 px-2 gap-1 bg-black text-white border-gray-700 hover:bg-gray-800 hover:border-gray-600 hover:text-white text-[10px] md:text-xs whitespace-nowrap"
 
-                                                  className="h-7 px-2 gap-1 bg-black text-white border-gray-700 hover:bg-gray-800 hover:border-gray-600 hover:text-white text-[10px] md:text-xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
-
-                                                  title={req.status?.toLowerCase() === 'confirmed' ? "Cannot edit confirmed requirements" : "Edit Quantity/Notes"}
+                                                  title="Edit Quantity/Notes"
 
                                                 >
 
@@ -6820,7 +6764,7 @@ const MyEventsPage: React.FC = () => {
 
                                                 <div className="text-sm text-gray-600 bg-white rounded p-2">
 
-                                                  <span className="font-medium">Answer:</span> <span className="text-green-600 font-semibold">✓ Yes</span>
+                                                  <span className="font-medium">Answer:</span> <span className="text-green-600 font-semibold">âœ“ Yes</span>
 
                                                 </div>
 
@@ -8468,7 +8412,7 @@ const MyEventsPage: React.FC = () => {
 
                 <p className="text-xs text-gray-600 mt-1">
 
-                  {new Date(addingToEvent.startDate).toLocaleDateString()} • {addingToEvent.location}
+                  {new Date(addingToEvent.startDate).toLocaleDateString()} â€¢ {addingToEvent.location}
 
                 </p>
 
@@ -8636,7 +8580,7 @@ const MyEventsPage: React.FC = () => {
 
                   <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 text-xs">
 
-                    📅 Showing availability for {new Date(addingToEvent.startDate).toDateString()}
+                    ðŸ“… Showing availability for {new Date(addingToEvent.startDate).toDateString()}
 
                   </div>
 
@@ -9630,7 +9574,7 @@ const MyEventsPage: React.FC = () => {
 
                               >
 
-                                ×
+                                Ã—
 
                               </button>
 
@@ -9728,7 +9672,7 @@ const MyEventsPage: React.FC = () => {
 
                                 >
 
-                                  ×
+                                  Ã—
 
                                 </button>
 
@@ -9808,7 +9752,7 @@ const MyEventsPage: React.FC = () => {
 
                                 >
 
-                                  ×
+                                  Ã—
 
                                 </button>
 
@@ -9985,7 +9929,7 @@ const MyEventsPage: React.FC = () => {
                   </label>
                   <Select value={autoSuggestEndTime} onValueChange={(v) => setAutoSuggestEndTime(v)} disabled={!autoSuggestStartTime}>
                     <SelectTrigger className="h-9 text-sm bg-white border-gray-200 rounded-lg" disabled={!autoSuggestStartTime}>
-                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : '—'} />
+                      <SelectValue placeholder={autoSuggestStartTime ? 'Select' : 'â€”'} />
                     </SelectTrigger>
                     <SelectContent className="max-h-56">
                       {generateTimeOptions()
@@ -10009,7 +9953,7 @@ const MyEventsPage: React.FC = () => {
               className="w-full h-10 rounded-xl bg-violet-600 hover:bg-violet-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium flex items-center justify-center gap-2 transition-colors"
             >
               {loadingAutoSuggest
-                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availability…</>
+                ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Checking availabilityâ€¦</>
                 : <><Sparkles className="w-3.5 h-3.5" /> Find Suitable Venues</>}
             </button>
 
@@ -10025,7 +9969,7 @@ const MyEventsPage: React.FC = () => {
                     </span>
                     {suggestedLocations.filter(s => s.isBooked).length > 0 && (
                       <>
-                        <span className="text-gray-300">·</span>
+                        <span className="text-gray-300">Â·</span>
                         <span className="flex items-center gap-1 text-red-500">
                           <Ban className="w-3.5 h-3.5" />
                           {suggestedLocations.filter(s => s.isBooked).length} booked
@@ -10079,13 +10023,13 @@ const MyEventsPage: React.FC = () => {
                             </span>
                             {sug.isMulti && (
                               <>
-                                <span className="text-gray-300 text-xs">·</span>
+                                <span className="text-gray-300 text-xs">Â·</span>
                                 <span className="text-xs text-violet-500 font-medium">Multi-room</span>
                               </>
                             )}
                             {sug.note && (
                               <>
-                                <span className="text-gray-300 text-xs">·</span>
+                                <span className="text-gray-300 text-xs">Â·</span>
                                 <span className="text-xs text-gray-400 truncate">{sug.note}</span>
                               </>
                             )}
@@ -10105,9 +10049,9 @@ const MyEventsPage: React.FC = () => {
                               <CalendarIcon className="w-2.5 h-2.5 flex-shrink-0" />
                               {format(autoSuggestStartDate, 'MMM dd')}
                               {autoSuggestEndDate && autoSuggestEndDate.getTime() !== autoSuggestStartDate.getTime()
-                                ? ` – ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
+                                ? ` â€“ ${format(autoSuggestEndDate, 'MMM dd, yyyy')}`
                                 : `, ${format(autoSuggestStartDate, 'yyyy')}`}
-                              {autoSuggestStartTime && ` · ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` – ${formatTime(autoSuggestEndTime)}` : ''}`}
+                              {autoSuggestStartTime && ` Â· ${formatTime(autoSuggestStartTime)}${autoSuggestEndTime ? ` â€“ ${formatTime(autoSuggestEndTime)}` : ''}`}
                             </p>
                           )}
                         </div>
