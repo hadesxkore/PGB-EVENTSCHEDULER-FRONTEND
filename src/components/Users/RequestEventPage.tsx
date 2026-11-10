@@ -1122,7 +1122,16 @@ const RequestEventPage: React.FC = () => {
         // Sound System is handled separately via getPavilionSoundSystemMaxQuantity.
         const isGroupFallback = !exactMatch && requirementsSource &&
           Array.isArray(requirementsSource.locationNames) && requirementsSource.locationNames.length > 1;
-        const groupSectionCount = isGroupFallback ? (requirementsSource.locationNames as string[]).length : 1;
+        // Only count SECTION locations (exclude "Entire") for quantity division.
+        // Combined quantities represent the sum across sections only, not the Entire location.
+        // e.g. locationNames = [Kagitingan Hall (Entire), Section A, Section B, Section C]
+        //      sectionCount = 3 → 300 chairs / 3 = 100 per section
+        const sectionOnlyLocations = isGroupFallback
+          ? (requirementsSource.locationNames as string[]).filter(
+              (loc: string) => !/\bEntire\b/i.test(loc)
+            )
+          : [];
+        const groupSectionCount = sectionOnlyLocations.length > 0 ? sectionOnlyLocations.length : 1;
 
         const adjustedRequirements = requirements.map((req: any) => {
           if (/sound system/i.test(req.name)) {
@@ -8432,7 +8441,7 @@ const RequestEventPage: React.FC = () => {
                       <span className="text-sm font-medium text-gray-700">{req.name}</span>
                     </div>
                     <Badge variant="outline" className="bg-white text-blue-700 border-blue-300">
-                      Ã—{req.quantity}
+                      ×{req.quantity}
                     </Badge>
                   </div>
                 ))}

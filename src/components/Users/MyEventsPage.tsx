@@ -9574,7 +9574,7 @@ const MyEventsPage: React.FC = () => {
 
                               >
 
-                                Ã—
+                                ×
 
                               </button>
 
@@ -9672,7 +9672,7 @@ const MyEventsPage: React.FC = () => {
 
                                 >
 
-                                  Ã—
+                                  ×
 
                                 </button>
 
@@ -9752,7 +9752,7 @@ const MyEventsPage: React.FC = () => {
 
                                 >
 
-                                  Ã—
+                                  ×
 
                                 </button>
 
