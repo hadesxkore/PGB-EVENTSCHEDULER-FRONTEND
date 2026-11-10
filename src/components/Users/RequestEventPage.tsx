@@ -1839,10 +1839,8 @@ const RequestEventPage: React.FC = () => {
         // list directly as the PGSO defaults, bypassing the global PGSO master
         // list / availability API.
         if (isPgso && locationRequirements.length > 0) {
-          // Pavilion-specific overrides: hide microphones, cap Sound System based on section count
-          const pavilionFiltered = isPavilionLocation
-            ? locationRequirements.filter((r) => !/microphone/i.test(r.name))
-            : locationRequirements;
+          // Include all logistics requirements (Sound System, Microphones, Tables, Chairs, Stage Platform)
+          const pavilionFiltered = locationRequirements;
           const mappedRequirements: DepartmentRequirement[] = pavilionFiltered.map((locReq, idx) => {
             const isSoundSystem = /sound system/i.test(locReq.name);
             const effectiveQty = isSoundSystem
@@ -1895,9 +1893,7 @@ const RequestEventPage: React.FC = () => {
             return;
           }
 
-          const pavilionFilteredReqs = isPavilionLocation
-            ? locationRequirements.filter((r) => !/microphone/i.test(r.name))
-            : locationRequirements;
+          const pavilionFilteredReqs = locationRequirements;
 
           const pavilionNames = isPgso && locationRequirements.length > 0
             ? new Set(pavilionFilteredReqs.map((lr) => lr.name))
@@ -4256,7 +4252,7 @@ const RequestEventPage: React.FC = () => {
 
                 {/* Row 2: Requestor & Location */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
+                  <div className="min-w-0">
                     <Label htmlFor="requestor" className="text-sm font-medium">Requestor <span className="text-red-500">*</span></Label>
                     <Input
                       id="requestor"
@@ -4266,7 +4262,7 @@ const RequestEventPage: React.FC = () => {
                       className="mt-1"
                     />
                   </div>
-                  <div>
+                  <div className="min-w-0">
                     {/* Location label "” clean, no toggle here */}
                     <Label htmlFor="location" className="text-sm font-medium">
                       Location <span className="text-red-500">*</span>
@@ -4288,7 +4284,7 @@ const RequestEventPage: React.FC = () => {
 
                     {/* Custom location input - COMMENTED OUT to force Auto Suggest */}
                     {/* {!showCustomLocation ? ( */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 min-w-0 w-full">
                         {/* Location dropdown - COMMENTED OUT, replaced with Auto Suggest button */}
                         {/* <Select
                           value={formData.location}
@@ -4374,17 +4370,18 @@ const RequestEventPage: React.FC = () => {
                             setShowAutoSuggestModal(true);
                           }}
                           variant="outline"
-                          className="mt-1 h-9 flex-1 justify-start text-left font-normal"
+                          title={formData.location || 'Click to use Auto Suggest'}
+                          className="mt-1 h-9 flex-1 min-w-0 w-full justify-start text-left font-normal overflow-hidden"
                         >
                           {formData.location ? (
-                            <div className="flex items-center gap-2 truncate w-full">
+                            <div className="flex items-center gap-2 truncate min-w-0 w-full">
                               <MapPin className="w-4 h-4 text-violet-500 shrink-0" />
-                              <span className="truncate">{formData.location}</span>
+                              <span className="truncate min-w-0 flex-1">{formData.location}</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-2 text-gray-500">
+                            <div className="flex items-center gap-2 text-gray-500 truncate min-w-0 w-full">
                               <Wand2 className="w-4 h-4 shrink-0" />
-                              <span>Click to use Auto Suggest</span>
+                              <span className="truncate">Click to use Auto Suggest</span>
                             </div>
                           )}
                         </Button>
@@ -4398,7 +4395,7 @@ const RequestEventPage: React.FC = () => {
                               setSelectedLocation(formData.location);
                               setShowScheduleModal(true);
                             }}
-                            className="mt-1 h-9 px-3"
+                            className="mt-1 h-9 px-3 shrink-0"
                             title="Edit schedule"
                           >
                             <CalendarIcon className="w-4 h-4" />
@@ -8245,10 +8242,7 @@ const RequestEventPage: React.FC = () => {
               </div>
             ) : locationRequirements.length > 0 ? (
               <div className={`${locationRequirements.length > 4 ? 'grid grid-cols-2 gap-3' : 'space-y-2'}`}>
-                {(/pavilion/i.test(selectedLocation ?? '')
-                  ? locationRequirements.filter((r) => !/microphone/i.test(r.name))
-                  : locationRequirements
-                ).map((req, idx) => (
+                {locationRequirements.map((req, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-center gap-2">
                       <CheckSquare className="w-4 h-4 text-blue-600" />
