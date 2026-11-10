@@ -3862,6 +3862,7 @@ const RequestEventPage: React.FC = () => {
 
         // Only Kagitingan Hall uses the shared remaining pool.
         // Kalayaan Ballroom is a standalone room with its own 250 Tiffany chairs!
+        const isPavilionLoc = /Pavilion/i.test(loc.name);
         const isKagitinganEntire = /Pavilion.*Kagitingan.*Entire/i.test(loc.name);
 
         let chairs: number;
@@ -4006,7 +4007,8 @@ const RequestEventPage: React.FC = () => {
 
       setSuggestedLocations(results);
       setShowSuggestions(true);
-    } catch {
+    } catch (err) {
+      console.error('Error during runAutoSuggest:', err);
       toast.error('Failed to check venue availability. Please try again.');
     } finally {
       setLoadingAutoSuggest(false);
@@ -6269,12 +6271,12 @@ const RequestEventPage: React.FC = () => {
         <DialogContent className="!max-w-2xl !w-full max-h-[90vh] flex flex-col">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <DialogTitle className="text-xl font-semibold text-gray-900">
                 Schedule Event at {formData.location || selectedLocation}
-              </h2>
-              <p className="text-sm text-gray-600 mt-1">
+              </DialogTitle>
+              <DialogDescription className="text-sm text-gray-600 mt-1">
                 Select your preferred start and end date/time for the event.
-              </p>
+              </DialogDescription>
 
               {/* Multi-Conference Room Selection - Clean White Design */}
               {(formData.location === '4th Flr. Conference Room 1' ||
@@ -8665,8 +8667,8 @@ const RequestEventPage: React.FC = () => {
                 <Wand2 className="w-4 h-4 text-violet-600" />
               </div>
               <div>
-                <h2 className="text-base font-semibold text-gray-900 leading-tight">Find a Venue</h2>
-                <p className="text-xs text-gray-400 leading-tight">We'll suggest locations that fit your needs</p>
+                <DialogTitle className="text-base font-semibold text-gray-900 leading-tight">Find a Venue</DialogTitle>
+                <DialogDescription className="text-xs text-gray-400 leading-tight">We'll suggest locations that fit your needs</DialogDescription>
               </div>
               <button
                 type="button"
