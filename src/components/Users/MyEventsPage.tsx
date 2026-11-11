@@ -949,6 +949,8 @@ const MyEventsPage: React.FC = () => {
   const [selectedEventFiles, setSelectedEventFiles] = useState<any>(null);
   const [editingRequirement, setEditingRequirement] = useState<any>(null);
   const [editRequirementData, setEditRequirementData] = useState({ quantity: 0, notes: '' });
+  const [deletingRequirement, setDeletingRequirement] = useState<any>(null);
+  const [isDeletingRequirement, setIsDeletingRequirement] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [requirementReplyDrafts, setRequirementReplyDrafts] = useState<{ [reqId: string]: string }>({});
   const [loadingAutoSuggest, setLoadingAutoSuggest] = useState(false);
@@ -3947,6 +3949,98 @@ const MyEventsPage: React.FC = () => {
 
 
 
+  // Open delete requirement confirmation
+
+  const handleDeleteRequirement = (requirement: any, eventId: string, department: string) => {
+
+    setDeletingRequirement({ ...requirement, eventId, department });
+
+  };
+
+
+
+  // Confirm and execute requirement deletion
+
+  const handleConfirmDeleteRequirement = async () => {
+
+    if (!deletingRequirement) return;
+
+
+
+    setIsDeletingRequirement(true);
+
+    try {
+
+      const token = localStorage.getItem('authToken');
+
+      const response = await axios.delete(
+
+        `${API_BASE_URL}/events/${deletingRequirement.eventId}/requirements/${deletingRequirement.id}`,
+
+        {
+
+          headers: {
+
+            'Authorization': `Bearer ${token}`,
+
+            'Content-Type': 'application/json'
+
+          }
+
+        }
+
+      );
+
+
+
+      if (response.data.success) {
+
+        toast.success('Requirement deleted successfully');
+
+        setDeletingRequirement(null);
+
+
+
+        // Refresh events list
+
+        fetchMyEvents();
+
+
+
+        // Refresh the open Tagged Departments modal event if it matches
+
+        if (selectedEventDepartments && selectedEventDepartments._id === deletingRequirement.eventId) {
+
+          const updatedEvent = await axios.get(`${API_BASE_URL}/events/${deletingRequirement.eventId}`, {
+
+            headers: { 'Authorization': `Bearer ${token}` }
+
+          });
+
+          if (updatedEvent.data.success) {
+
+            setSelectedEventDepartments(updatedEvent.data.data);
+
+          }
+
+        }
+
+      }
+
+    } catch (error: any) {
+
+      toast.error(error.response?.data?.message || 'Failed to delete requirement');
+
+    } finally {
+
+      setIsDeletingRequirement(false);
+
+    }
+
+  };
+
+
+
   // Handle change department
 
   const handleChangeDepartment = (requirement: any, eventId: string, currentDepartment: string) => {
@@ -6175,6 +6269,46 @@ const MyEventsPage: React.FC = () => {
             <AlertDialogAction onClick={handleConfirmDeleteFile} disabled={deletingFile}>
 
               {deletingFile ? 'Deleting...' : 'Delete'}
+
+            </AlertDialogAction>
+
+          </AlertDialogFooter>
+
+        </AlertDialogContent>
+
+      </AlertDialog>
+
+
+
+      {/* Delete Requirement Confirmation */}
+
+      <AlertDialog open={!!deletingRequirement} onOpenChange={(open) => {
+
+        if (!open && !isDeletingRequirement) setDeletingRequirement(null);
+
+      }}>
+
+        <AlertDialogContent>
+
+          <AlertDialogHeader>
+
+            <AlertDialogTitle>Delete Requirement?</AlertDialogTitle>
+
+            <AlertDialogDescription>
+
+              This will permanently remove "{deletingRequirement?.name}" from {deletingRequirement?.department}. This frees up availability for other events.
+
+            </AlertDialogDescription>
+
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+
+            <AlertDialogCancel disabled={isDeletingRequirement}>Cancel</AlertDialogCancel>
+
+            <AlertDialogAction onClick={handleConfirmDeleteRequirement} disabled={isDeletingRequirement}>
+
+              {isDeletingRequirement ? 'Deleting...' : 'Delete'}
 
             </AlertDialogAction>
 
@@ -8480,9 +8614,9 @@ const MyEventsPage: React.FC = () => {
 
                           {isAlreadyTagged && (
 
-                            <Badge variant="secondary" className="text-xs">
+                            <Badge variant="outline" className="text-xs border-blue-300 text-blue-600">
 
-                              Already Tagged
+                              + Add Requirements
 
                             </Badge>
 
