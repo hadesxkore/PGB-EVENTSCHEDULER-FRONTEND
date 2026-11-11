@@ -423,7 +423,7 @@ const MyEventsPage: React.FC = () => {
     endTime: '',
     dateTimeSlots: [] as { id?: string; date: Date; startTime: string; endTime: string }[],
   });
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
+  const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [venueConflictingEvents, setVenueConflictingEvents] = useState<any[]>([]);
   const [conflictingEvents, setConflictingEvents] = useState<any[]>([]);
   const [showCustomLocationInput, setShowCustomLocationInput] = useState(false);
@@ -569,7 +569,7 @@ const MyEventsPage: React.FC = () => {
 
           // Update currently open Tagged Departments modal event, if matches
 
-          setSelectedEventDepartments(prev => (prev && prev._id === updatedEvent._id ? updatedEvent : prev));
+          setSelectedEventDepartments((prev: any) => (prev && prev._id === updatedEvent._id ? updatedEvent : prev));
 
         }
 
@@ -637,7 +637,7 @@ const MyEventsPage: React.FC = () => {
 
           // This ensures the modal shows the latest department notes in real-time
 
-          setSelectedEventDepartments(prev => (prev && prev._id === updatedEvent._id ? { ...updatedEvent } : prev));
+          setSelectedEventDepartments((prev: any) => (prev && prev._id === updatedEvent._id ? { ...updatedEvent } : prev));
 
         }
 
@@ -731,7 +731,7 @@ const MyEventsPage: React.FC = () => {
 
           // Update currently open Tagged Departments modal event, if matches
 
-          setSelectedEventDepartments(prev => (prev && prev._id === updatedEvent._id ? updatedEvent : prev));
+          setSelectedEventDepartments((prev: any) => (prev && prev._id === updatedEvent._id ? updatedEvent : prev));
 
 
 
@@ -871,7 +871,7 @@ const MyEventsPage: React.FC = () => {
 
         setEvents(prev => prev.map(ev => (ev._id === updatedEvent._id ? updatedEvent : ev)));
 
-        setSelectedEditEvent(prev => (prev && prev._id === updatedEvent._id ? updatedEvent : prev));
+        setSelectedEditEvent((prev: any) => (prev && prev._id === updatedEvent._id ? updatedEvent : prev));
 
       } else {
 
@@ -5578,7 +5578,7 @@ const MyEventsPage: React.FC = () => {
                                 Add More Departments
                               </DropdownMenuItem>
                             )}
-                            {(event.status === 'submitted' || event.status === 'approved' || event.status === 'incoming' || event.status === 'ongoing') && (
+                            {(event.status === 'submitted' || event.status === 'approved' || event.status === 'ongoing') && (
                               <DropdownMenuItem onClick={() => handleOpenCancelEvent(event)}>
                                 <XCircle className="w-3.5 h-3.5 mr-2" />
                                 Cancel Event
@@ -5743,7 +5743,7 @@ const MyEventsPage: React.FC = () => {
 
                       <div className="flex flex-wrap gap-1 mt-1">
 
-                        {selectedEvent.locations.map((loc, idx) => (
+                        {selectedEvent.locations.map((loc: any, idx: number) => (
 
                           <Badge key={idx} variant="secondary" className="text-xs">
 
@@ -6064,7 +6064,7 @@ const MyEventsPage: React.FC = () => {
 
                       <div className="space-y-2">
 
-                        {selectedEvent.dateTimeSlots.map((slot, index) => (
+                        {selectedEvent.dateTimeSlots.map((slot: any, index: number) => (
 
                           <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
 
@@ -7280,7 +7280,7 @@ const MyEventsPage: React.FC = () => {
 
                   <div className="grid grid-cols-1 gap-3">
 
-                    {selectedEventFiles.attachments.map((attachment, index) => (
+                    {selectedEventFiles.attachments.map((attachment: any, index: number) => (
 
                       <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
 

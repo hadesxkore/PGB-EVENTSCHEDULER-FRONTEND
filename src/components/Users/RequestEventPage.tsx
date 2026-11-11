@@ -153,7 +153,7 @@ type AutoSuggestedLocation = {
   bookedOnDates: string[];
   seatsLabel?: string;
 };
-// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─────────────────────────────────────────────────────────────────────────────
 
 const RequestEventPage: React.FC = () => {
   const navigate = useNavigate();
@@ -217,7 +217,7 @@ const RequestEventPage: React.FC = () => {
   const [showPitoBlockAlert, setShowPitoBlockAlert] = useState(false);
   const [pitoBlockMessage, setPitoBlockMessage] = useState('');
 
-  // â”€â”€ Auto Suggest Location state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Auto Suggest Location state ────────────────────────────────────────────
   const [locationMode, setLocationMode] = useState<'manual' | 'auto-suggest'>('auto-suggest');
   const [showAutoSuggestModal, setShowAutoSuggestModal] = useState(false);
   const [autoSuggestParticipants, setAutoSuggestParticipants] = useState('');
@@ -229,7 +229,7 @@ const RequestEventPage: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
   const [loadingAutoSuggest, setLoadingAutoSuggest] = useState(false);
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────────────────────────────────
   const [loadingLocationRequirements, setLoadingLocationRequirements] = useState(false);
   const [loadingDepartmentRequirements, setLoadingDepartmentRequirements] = useState(false);
   const [locationRoomTypes, setLocationRoomTypes] = useState<string[]>([]);
@@ -3194,10 +3194,10 @@ const RequestEventPage: React.FC = () => {
         throw new Error(lastResponse?.data?.message || 'Submission failed');
       }
     } catch (error: any) {
-      console.error('âŒ [EVENT SUBMISSION] Error:', error);
-      console.error('âŒ [EVENT SUBMISSION] Error code:', error.code);
-      console.error('âŒ [EVENT SUBMISSION] Error response:', error.response);
-      console.error('âŒ [EVENT SUBMISSION] Error message:', error.message);
+      console.error('❌ [EVENT SUBMISSION] Error:', error);
+      console.error('❌ [EVENT SUBMISSION] Error code:', error.code);
+      console.error('❌ [EVENT SUBMISSION] Error response:', error.response);
+      console.error('❌ [EVENT SUBMISSION] Error message:', error.message);
 
       // Dismiss loading toast if it exists
       if (uploadToastId) {
@@ -3227,7 +3227,7 @@ const RequestEventPage: React.FC = () => {
         if (serverError) {
           // Strip Mongoose "Event validation failed: " prefix
           const cleanError = serverError.replace(/^Event validation failed:\s*/i, '');
-          // Prettify field names like "contactEmail" â†’ "Contact Email"
+          // Prettify field names like "contactEmail" → "Contact Email"
           const prettifyField = (field: string) =>
             field.replace(/([A-Z])/g, ' $1').replace(/^./, (c) => c.toUpperCase()).trim();
           // Split multiple validation errors (separated by ", fieldName:")
@@ -3612,7 +3612,7 @@ const RequestEventPage: React.FC = () => {
     return errors;
   };
 
-  // â”€â”€ Auto Suggest: helpers & logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Auto Suggest: helpers & logic ─────────────────────────────────────────
 
   // Build every calendar date between start and end (inclusive)
   const buildDateRange = (start: Date, end: Date): Date[] => {
@@ -3665,11 +3665,11 @@ const RequestEventPage: React.FC = () => {
             if (slot) { evStart = slot.startTime || null; evEnd = slot.endTime || null; }
           }
 
-          // If we have time info on both sides â†’ time-overlap check
+          // If we have time info on both sides → time-overlap check
           if (selStart !== null && selEnd !== null && evStart && evEnd) {
             return selStart < toMin(evEnd) && selEnd > toMin(evStart);
           }
-          // No time info â†’ date-level block
+          // No time info → date-level block
           return !!evStart || mainDay === dayStr;
         });
       })
@@ -3760,7 +3760,7 @@ const RequestEventPage: React.FC = () => {
         return { total, capacity, breakdown };
       };
 
-      // â”€â”€ Shared Pavilion pool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ── Shared Pavilion pool ───────────────────────────────────────────────
       // ALL Pavilion locations (Kalayaan Entire + all Kagitingan sections) draw
       // from a single shared inventory pool of chairs/tables.
       // Find the overall Pavilion requirements doc "” it should cover all Pavilion
@@ -3844,7 +3844,7 @@ const RequestEventPage: React.FC = () => {
       };
 
       const pavilionRemainingChairs = getPavilionRemainingChairs();
-      // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ──────────────────────────────────────────────────────────────────────
 
       const results: AutoSuggestedLocation[] = [];
 
@@ -4096,7 +4096,7 @@ const RequestEventPage: React.FC = () => {
       setShowLocationRequirementsModal(true);
     }
   };
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="p-4 md:p-6 max-w-6xl mx-auto space-y-4 md:space-y-6">
@@ -4485,7 +4485,7 @@ const RequestEventPage: React.FC = () => {
                       </div> */}
                     {/* )} */}
 
-                    {/* â”€â”€ Manual / Auto Suggest toggle "” below the dropdown â”€â”€ */}
+                    {/* ── Manual / Auto Suggest toggle "” below the dropdown ── */}
                     <div className="mt-2 space-y-2">
                       <div className="flex items-center gap-2">
                         {/* Manual button - COMMENTED OUT to force users to use Auto Suggest */}
@@ -4719,12 +4719,12 @@ const RequestEventPage: React.FC = () => {
                 <div className="mb-2">
                   {formData.eventType === 'simple-meeting' ? (
                     formData.withoutGov ? (
-                      <p className="text-sm text-gray-600">ðŸ“Ž <strong>Attachments are required</strong> - w/ Governor is enabled</p>
+                      <p className="text-sm text-gray-600">📎 <strong>Attachments are required</strong> - w/ Governor is enabled</p>
                     ) : (
-                      <p className="text-sm text-gray-500">ðŸ“Ž Attachments are optional for Simple Meeting without Governor</p>
+                      <p className="text-sm text-gray-500">📎 Attachments are optional for Simple Meeting without Governor</p>
                     )
                   ) : (
-                    <p className="text-sm text-gray-600">ðŸ“Ž <strong>Attachments are required</strong> - Please upload at least one file</p>
+                    <p className="text-sm text-gray-600">📎 <strong>Attachments are required</strong> - Please upload at least one file</p>
                   )}
                 </div>
 
@@ -4858,7 +4858,7 @@ const RequestEventPage: React.FC = () => {
                       />
                       <div className="flex-1">
                         <Label htmlFor="pgsoCustomLocationAck" className="text-sm font-medium text-green-900">
-                          âœ“ Custom location acknowledged
+                          ✓ Custom location acknowledged
                         </Label>
                         <p className="text-xs text-green-700 mt-1">
                           Since you selected a custom location (Outside PGB), please contact PGSO directly for any requirements needed at this venue.
@@ -4899,7 +4899,7 @@ const RequestEventPage: React.FC = () => {
                           : "border-amber-400 text-amber-900 hover:bg-amber-100 gap-1.5 font-medium"
                         }
                       >
-                        {formData.proceedWithoutPgsoChairs ? "âœ“ Proceeding Without PGSO Chairs" : "Proceed Without PGSO Chairs"}
+                        {formData.proceedWithoutPgsoChairs ? "✓ Proceeding Without PGSO Chairs" : "Proceed Without PGSO Chairs"}
                       </Button>
                       {formData.proceedWithoutPgsoChairs && (
                         <span className="text-xs font-medium text-amber-800 flex items-center gap-1">
@@ -5081,7 +5081,7 @@ const RequestEventPage: React.FC = () => {
                                                 {req.type === 'physical' && req.quantity
                                                   ? `Requested: ${req.quantity}${req.totalQuantity !== undefined ? ` of ${req.totalQuantity}` : ''}`
                                                   : req.type === 'yesno' && req.yesNoAnswer
-                                                    ? `Answer: ${req.yesNoAnswer === 'yes' ? 'âœ“ Yes' : 'âœ— No'}`
+                                                    ? `Answer: ${req.yesNoAnswer === 'yes' ? '✓ Yes' : '✗ No'}`
                                                     : `Available: ${req.totalQuantity !== undefined ? req.totalQuantity : 'N/A'}`}
                                               </span>
                                               <span className={`flex items-center gap-1 ${
@@ -5099,7 +5099,7 @@ const RequestEventPage: React.FC = () => {
                                         </div>
                                         {hasZeroQuantity && (
                                           <div className="text-[10px] text-red-700 mt-1 font-medium">
-                                            âš ï¸ This item will be removed when you continue to schedule
+                                            ⚠ï¸ This item will be removed when you continue to schedule
                                           </div>
                                         )}
                                         {req.responsiblePerson && (
@@ -5576,12 +5576,12 @@ const RequestEventPage: React.FC = () => {
                 </DialogDescription>
                 {!formData.startDate && (
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-800 text-xs">
-                    âš ï¸ No date selected - showing default quantities. Set schedule first for accurate availability.
+                    ⚠ï¸ No date selected - showing default quantities. Set schedule first for accurate availability.
                   </div>
                 )}
                 {formData.startDate && (
                   <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800 text-xs">
-                    ðŸ“… Showing availability for {formData.startDate.toDateString()}
+                    📅 Showing availability for {formData.startDate.toDateString()}
                   </div>
                 )}
               </div>
@@ -5589,16 +5589,16 @@ const RequestEventPage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  console.log(`\nðŸ”„ === EDIT SCHEDULE BUTTON CLICKED ===`);
-                  console.log(`ðŸ“ Current formData.location: ${formData.location}`);
-                  console.log(`ðŸ“ Current selectedLocation: ${selectedLocation}`);
-                  console.log(`ðŸŽ¯ Current showRequirementsModal: ${showRequirementsModal}`);
-                  console.log(`ðŸŽ¯ Current showScheduleModal: ${showScheduleModal}`);
+                  console.log(`\n🔄 === EDIT SCHEDULE BUTTON CLICKED ===`);
+                  console.log(`📍 Current formData.location: ${formData.location}`);
+                  console.log(`📍 Current selectedLocation: ${selectedLocation}`);
+                  console.log(`🎯 Current showRequirementsModal: ${showRequirementsModal}`);
+                  console.log(`🎯 Current showScheduleModal: ${showScheduleModal}`);
 
                   setShowRequirementsModal(false);
                   setShowScheduleModal(true);
 
-                  console.log(`âœ… Modals switched - Requirements: false, Schedule: true`);
+                  console.log(`✅ Modals switched - Requirements: false, Schedule: true`);
                 }}
                 className="gap-2 ml-4"
               >
@@ -6740,7 +6740,7 @@ const RequestEventPage: React.FC = () => {
                                       </SelectTrigger>
                                       <SelectContent className="max-h-60" position="popper" sideOffset={5}>
                                         {generateTimeOptions().map((timeOption) => {
-                                          console.log('ðŸŽ¯ START TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
+                                          console.log('🎯 START TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
                                           const isBooked = isTimeSlotBooked(timeOption.value, date);
                                           const requirementConflict = hasRequirementConflictAtTime(timeOption.value, date);
 
@@ -6814,7 +6814,7 @@ const RequestEventPage: React.FC = () => {
                                           // must not overlap/bridge across booked venue intervals
                                           return !isVenueRangeBooked(slot.startTime, t.value, date);
                                         }).map((timeOption) => {
-                                          console.log('ðŸŽ¯ END TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
+                                          console.log('🎯 END TIME - date variable:', date?.toDateString(), 'timeOption:', timeOption.value);
                                           const isBooked = isTimeSlotBooked(timeOption.value, date);
                                           const requirementConflict = hasRequirementConflictAtTime(timeOption.value, date);
 
@@ -8598,7 +8598,7 @@ const RequestEventPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* â”€â”€ Auto Suggest Location Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Auto Suggest Location Modal ──────────────────────────────────────── */}
       <Dialog
         open={showAutoSuggestModal}
         onOpenChange={(open) => {
@@ -8608,7 +8608,7 @@ const RequestEventPage: React.FC = () => {
       >
         <DialogContent className="sm:max-w-xl max-h-[92vh] flex flex-col p-0 gap-0 overflow-hidden rounded-2xl border-0 shadow-2xl">
 
-          {/* â”€â”€ Venue Search Loading Overlay (inside modal) â”€â”€ */}
+          {/* ── Venue Search Loading Overlay (inside modal) ── */}
           {loadingAutoSuggest && (
             <div className="absolute inset-0 z-50 flex flex-col items-center justify-center rounded-2xl bg-white/90 backdrop-blur-[2px]">
               {/* Spinner ring */}
@@ -8654,7 +8654,7 @@ const RequestEventPage: React.FC = () => {
             </div>
           )}
 
-          {/* â”€â”€ Header â”€â”€ */}
+          {/* ── Header ── */}
           <div className="flex-shrink-0 px-6 pt-6 pb-5">
             <div className="flex items-center gap-3 mb-1">
               <div className="w-8 h-8 rounded-xl bg-violet-100 flex items-center justify-center">
@@ -8674,10 +8674,10 @@ const RequestEventPage: React.FC = () => {
             </div>
           </div>
 
-          {/* â”€â”€ Scrollable body â”€â”€ */}
+          {/* ── Scrollable body ── */}
           <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-4">
 
-            {/* â”€â”€ Inputs section â”€â”€ */}
+            {/* ── Inputs section ── */}
             <div className="bg-gray-50 rounded-xl p-4 space-y-3">
 
               {/* Participants */}
@@ -8796,7 +8796,7 @@ const RequestEventPage: React.FC = () => {
               </div>
             </div>
 
-            {/* â”€â”€ Find button â”€â”€ */}
+            {/* ── Find button ── */}
             <button
               type="button"
               disabled={!autoSuggestParticipants || !autoSuggestStartDate || !autoSuggestEndDate || loadingAutoSuggest}
@@ -8808,7 +8808,7 @@ const RequestEventPage: React.FC = () => {
                 : <><Sparkles className="w-3.5 h-3.5" /> Find Suitable Venues</>}
             </button>
 
-            {/* â”€â”€ Results â”€â”€ */}
+            {/* ── Results ── */}
             {showSuggestions && (
               <div className="space-y-3">
                 {/* Summary bar */}
@@ -8939,7 +8939,7 @@ const RequestEventPage: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
-      {/* â”€â”€ End Auto Suggest Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── End Auto Suggest Modal ──────────────────────────────────────────── */}
 
     </div>
   );
