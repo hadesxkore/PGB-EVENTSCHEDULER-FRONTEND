@@ -5802,7 +5802,12 @@ const RequestEventPage: React.FC = () => {
                             )}
                             <div className="flex items-center gap-1">
                               <span className="font-medium">Status:</span>
-                              {requirement.isCustom ? (
+                              {requirement.isCustom && requirement.isAvailable === false ? (
+                                <span className="flex items-center gap-1 text-red-600">
+                                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                                  Unavailable (PITO)
+                                </span>
+                              ) : requirement.isCustom ? (
                                 <span className="flex items-center gap-1 text-orange-600">
                                   <div className="w-2 h-2 rounded-full bg-orange-500"></div>
                                   Pending Validation
