@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import type { ComponentProps } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
@@ -13,7 +14,7 @@ import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -139,6 +140,29 @@ const toRanges = (items: Schedule[]) =>
 const BLOCKED_DAY_CLASS =
   'rounded-md bg-destructive/10 font-medium text-destructive';
 
+// Wide range-picker calendar: fixed-height cells so a stretched month stays compact.
+const WIDE_CALENDAR_CLASSES = {
+  root: 'w-full',
+  months: 'relative flex flex-col gap-6 sm:flex-row',
+  day: 'group/day relative h-10 w-full p-0 text-center select-none [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md',
+};
+
+function WideDayButton({ className, ...props }: ComponentProps<typeof CalendarDayButton>) {
+  return <CalendarDayButton {...props} className={cn(className, 'aspect-auto h-full')} />;
+}
+
+const SM_QUERY = '(min-width: 640px)';
+function useIsSmUp() {
+  return useSyncExternalStore(
+    cb => {
+      const mql = window.matchMedia(SM_QUERY);
+      mql.addEventListener('change', cb);
+      return () => mql.removeEventListener('change', cb);
+    },
+    () => window.matchMedia(SM_QUERY).matches,
+  );
+}
+
 // ─── Small pieces ────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: Status }) {
@@ -238,6 +262,7 @@ function ScheduleFormDialog({
   const [range, setRange] = useState<DateRange | undefined>();
   const [reason, setReason] = useState('');
   const [saving, setSaving] = useState(false);
+  const isSmUp = useIsSmUp();
 
   useEffect(() => {
     if (!open) return;
@@ -281,7 +306,7 @@ function ScheduleFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-md">
+      <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Mark as unavailable</DialogTitle>
           <DialogDescription>
@@ -319,7 +344,7 @@ function ScheduleFormDialog({
                   : 'Pick a start and end date'}
               </span>
             </div>
-            <div className="flex justify-center rounded-lg border">
+            <div className="rounded-lg border">
               <Calendar
                 mode="range"
                 selected={range}
@@ -328,7 +353,11 @@ function ScheduleFormDialog({
                 disabled={{ before: startOfToday() }}
                 modifiers={{ blocked: toRanges(existing) }}
                 modifiersClassNames={{ blocked: BLOCKED_DAY_CLASS }}
-                className="bg-transparent"
+                numberOfMonths={isSmUp ? 2 : 1}
+                showOutsideDays={!isSmUp}
+                className="w-full bg-transparent"
+                classNames={WIDE_CALENDAR_CLASSES}
+                components={{ DayButton: WideDayButton }}
               />
             </div>
             <AnimatePresence initial={false}>
