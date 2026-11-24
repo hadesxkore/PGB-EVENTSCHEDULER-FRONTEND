@@ -1567,6 +1567,49 @@ const RequestEventPage: React.FC = () => {
 
 
       for (const deptName of depsToRefresh) {
+        if (deptName.toLowerCase().includes('pito') && updatedRequirements[deptName]) {
+          try {
+            const token = localStorage.getItem('authToken');
+            if (token && formData.startDate) {
+              const startStr = toLocalDateStr(formData.startDate);
+              const endStr = formData.endDate ? toLocalDateStr(formData.endDate) : startStr;
+              const checkRes = await fetch(`${API_BASE_URL}/resource-availability/pito/check`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ startDate: startStr, endDate: endStr }),
+              });
+              if (checkRes.ok) {
+                const checkData = await checkRes.json();
+                if (checkData.success) {
+                  const unavailNames: string[] = checkData.unavailableNames || [];
+                  const unavailIds: string[] = checkData.unavailableIds || [];
+                  const isKagitinganLoc = typeof formData.location === 'string' && formData.location.toLowerCase().includes('kagitingan');
+
+                  updatedRequirements[deptName] = updatedRequirements[deptName].map(req => {
+                    const isNameBlocked = unavailNames.some(u => u.trim().toLowerCase() === req.name.trim().toLowerCase());
+                    const isIdBlocked = unavailIds.some(i => req.id.startsWith(i));
+                    const isBlocked = isNameBlocked || isIdBlocked;
+                    const isLedWallKagitingan = isKagitinganLoc && req.name.toLowerCase().includes('led wall');
+                    const available = !isLedWallKagitingan && !isBlocked;
+
+                    return {
+                      ...req,
+                      isAvailable: available,
+                      selected: available ? req.selected : false,
+                      availabilityNotes: isBlocked
+                        ? 'This equipment is currently unavailable for your selected dates (marked by PITO). Please coordinate with PITO directly.'
+                        : (req.availabilityNotes && req.availabilityNotes.includes('marked by PITO') ? '' : req.availabilityNotes)
+                    };
+                  });
+                }
+              }
+            }
+          } catch {
+            // Silently continue
+          }
+          continue;
+        }
+
         const availabilities = await fetchResourceAvailabilities(deptName, formData.startDate);
 
         const department = departments.find(dept => dept.name === deptName);
@@ -1730,15 +1773,12 @@ const RequestEventPage: React.FC = () => {
 
         // ── Fetch PITO equipment unavailability from backend ──
         let pitoUnavailableNames: string[] = [];
+        let pitoUnavailableIds: string[] = [];
         try {
           const token = localStorage.getItem('authToken');
           if (token && formData.startDate) {
-            const startStr = typeof formData.startDate === 'string'
-              ? formData.startDate
-              : (formData.startDate as Date).toISOString().split('T')[0];
-            const endStr = formData.endDate
-              ? (typeof formData.endDate === 'string' ? formData.endDate : (formData.endDate as Date).toISOString().split('T')[0])
-              : startStr;
+            const startStr = toLocalDateStr(formData.startDate);
+            const endStr = formData.endDate ? toLocalDateStr(formData.endDate) : startStr;
             const checkRes = await fetch(`${API_BASE_URL}/resource-availability/pito/check`, {
               method: 'POST',
               headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -1746,15 +1786,28 @@ const RequestEventPage: React.FC = () => {
             });
             if (checkRes.ok) {
               const checkData = await checkRes.json();
-              if (checkData.success) pitoUnavailableNames = checkData.unavailableNames || [];
+              if (checkData.success) {
+                pitoUnavailableNames = checkData.unavailableNames || [];
+                pitoUnavailableIds = checkData.unavailableIds || [];
+              }
             }
           }
         } catch {
           // Silently fail – don't block user from continuing
         }
 
-        const makePitoNote = (name: string, baseNote?: string): string => {
-          if (pitoUnavailableNames.includes(name)) {
+        const isPitoItemUnavailable = (name: string, idPrefix?: string): boolean => {
+          const nameMatch = pitoUnavailableNames.some(
+            u => u.trim().toLowerCase() === name.trim().toLowerCase()
+          );
+          const idMatch = idPrefix ? pitoUnavailableIds.some(
+            i => i.trim().toLowerCase() === idPrefix.trim().toLowerCase()
+          ) : false;
+          return nameMatch || idMatch;
+        };
+
+        const makePitoNote = (name: string, idPrefix?: string, baseNote?: string): string => {
+          if (isPitoItemUnavailable(name, idPrefix)) {
             return 'This equipment is currently unavailable for your selected dates (marked by PITO). Please coordinate with PITO directly.';
           }
           return baseNote || '';
@@ -1769,11 +1822,11 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.'
-              : makePitoNote('LED Wall with Operator', 'If used outside PGB, this needs dismantling \u2014 please coordinate with PGSO for transportation.'),
+              : makePitoNote('LED Wall with Operator', 'pito-led-wall-operator', 'If used outside PGB, this needs dismantling — please coordinate with PGSO for transportation.'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !isKagitingan && !pitoUnavailableNames.includes('LED Wall with Operator'),
+            isAvailable: !isKagitingan && !isPitoItemUnavailable('LED Wall with Operator', 'pito-led-wall-operator'),
             isCustom: true
           },
           {
@@ -1783,11 +1836,11 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.' 
-              : makePitoNote('LED Wall', 'If used outside PGB, this needs dismantling \u2014 please coordinate with PGSO for transportation.'),
+              : makePitoNote('LED Wall', 'pito-led-wall', 'If used outside PGB, this needs dismantling — please coordinate with PGSO for transportation.'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !isKagitingan && !pitoUnavailableNames.includes('LED Wall'),
+            isAvailable: !isKagitingan && !isPitoItemUnavailable('LED Wall', 'pito-led-wall'),
             isCustom: true
           },
           {
@@ -1795,11 +1848,11 @@ const RequestEventPage: React.FC = () => {
             name: 'Projector with VGA',
             selected: false,
             notes: '',
-            availabilityNotes: makePitoNote('Projector with VGA'),
+            availabilityNotes: makePitoNote('Projector with VGA', 'pito-projector'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !pitoUnavailableNames.includes('Projector with VGA'),
+            isAvailable: !isPitoItemUnavailable('Projector with VGA', 'pito-projector'),
             isCustom: true
           },
           {
@@ -1807,11 +1860,11 @@ const RequestEventPage: React.FC = () => {
             name: 'Internet Connection',
             selected: false,
             notes: '',
-            availabilityNotes: makePitoNote('Internet Connection'),
+            availabilityNotes: makePitoNote('Internet Connection', 'pito-internet'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !pitoUnavailableNames.includes('Internet Connection'),
+            isAvailable: !isPitoItemUnavailable('Internet Connection', 'pito-internet'),
             isCustom: true,
             serviceType: 'yesno'
           },
@@ -1820,11 +1873,11 @@ const RequestEventPage: React.FC = () => {
             name: 'TV',
             selected: false,
             notes: '',
-            availabilityNotes: makePitoNote('TV', 'If used outside PGB, this needs dismantling \u2014 please coordinate with PGSO for transportation.'),
+            availabilityNotes: makePitoNote('TV', 'pito-tv', 'If used outside PGB, this needs dismantling — please coordinate with PGSO for transportation.'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !pitoUnavailableNames.includes('TV'),
+            isAvailable: !isPitoItemUnavailable('TV', 'pito-tv'),
             isCustom: true
           },
           {
@@ -1832,11 +1885,11 @@ const RequestEventPage: React.FC = () => {
             name: '10-meter HDMI Cable',
             selected: false,
             notes: '',
-            availabilityNotes: makePitoNote('10-meter HDMI Cable'),
+            availabilityNotes: makePitoNote('10-meter HDMI Cable', 'pito-hdmi-cable'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !pitoUnavailableNames.includes('10-meter HDMI Cable'),
+            isAvailable: !isPitoItemUnavailable('10-meter HDMI Cable', 'pito-hdmi-cable'),
             isCustom: true
           }
         ];
