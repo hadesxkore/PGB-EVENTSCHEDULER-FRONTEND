@@ -330,6 +330,23 @@ const RequestEventPage: React.FC = () => {
     return dates;
   };
 
+  // ── Local-timezone date formatter (avoids UTC offset shifting dates) ────
+  const toLocalDateStr = (d: Date | string | undefined | null): string => {
+    if (!d) return '';
+    if (typeof d === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d.trim())) return d.trim();
+      const p = new Date(d);
+      if (!isNaN(p.getTime())) { const y=p.getFullYear(),m=String(p.getMonth()+1).padStart(2,'0'),day=String(p.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+      return d;
+    }
+    if (d instanceof Date && !isNaN(d.getTime())) {
+      const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+    return '';
+  };
+
+
   // Check if a named room is unavailable on any selected date (ignores time; date-level blocking)
   const isRoomUnavailableOnSelectedDates = (roomName: string) => {
     const dates = getDatesToCheck();
