@@ -244,6 +244,56 @@ const fadeUp = {
   transition: { duration: 0.2, ease: 'easeOut' as const },
 };
 
+const rangeStrings = (range: DateRange | undefined) => {
+  const from = range?.from;
+  const to = range?.to ?? range?.from;
+  return {
+    from,
+    to,
+    startStr: from ? format(from, 'yyyy-MM-dd') : '',
+    endStr: to ? format(to, 'yyyy-MM-dd') : '',
+  };
+};
+
+async function createSchedule(eq: Equipment, startDate: string, endDate: string, reason: string) {
+  await axios.post(
+    `${API_BASE_URL}/resource-availability/pito/schedules`,
+    { equipmentId: eq.id, equipmentName: eq.name, startDate, endDate, reason },
+    { headers: authHeaders() },
+  );
+}
+
+function ReasonPicker({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>
+        Reason <span className="font-normal text-muted-foreground">(optional)</span>
+      </Label>
+      <div className="flex flex-wrap gap-1.5">
+        {REASON_PRESETS.map(r => (
+          <Button
+            key={r}
+            type="button"
+            size="sm"
+            variant={value === r ? 'default' : 'outline'}
+            className="h-7 rounded-full px-3 text-xs font-normal"
+            onClick={() => onChange(value === r ? '' : r)}
+          >
+            {r}
+          </Button>
+        ))}
+      </div>
+      <Textarea
+        id={id}
+        placeholder="Or write your own…"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        rows={2}
+      />
+    </div>
+  );
+}
+
 // ─── Add schedule dialog ─────────────────────────────────────────────────────
 
 interface ScheduleFormDialogProps {
@@ -277,10 +327,7 @@ function ScheduleFormDialog({
     [selected, schedules],
   );
 
-  const from = range?.from;
-  const to = range?.to ?? range?.from;
-  const startStr = from ? format(from, 'yyyy-MM-dd') : '';
-  const endStr = to ? format(to, 'yyyy-MM-dd') : '';
+  const { from, to, startStr, endStr } = rangeStrings(range);
   // `open` guard: the refetch after saving lands while the dialog fades out.
   const overlaps = open && !!from && existing.some(s => s.startDate <= endStr && s.endDate >= startStr);
   const canSubmit = !!selected && !!from && !saving;
@@ -289,11 +336,7 @@ function ScheduleFormDialog({
     if (!selected || !from || !to) return;
     setSaving(true);
     try {
-      await axios.post(
-        `${API_BASE_URL}/resource-availability/pito/schedules`,
-        { equipmentId: selected.id, equipmentName: selected.name, startDate: startStr, endDate: endStr, reason },
-        { headers: authHeaders() },
-      );
+      await createSchedule(selected, startStr, endStr, reason);
       toast.success(`${selected.name} blocked for ${formatRange(startStr, endStr)}`);
       onOpenChange(false);
       await onSaved();
@@ -369,32 +412,7 @@ function ScheduleFormDialog({
             </AnimatePresence>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="pito-reason">
-              Reason <span className="font-normal text-muted-foreground">(optional)</span>
-            </Label>
-            <div className="flex flex-wrap gap-1.5">
-              {REASON_PRESETS.map(r => (
-                <Button
-                  key={r}
-                  type="button"
-                  size="sm"
-                  variant={reason === r ? 'default' : 'outline'}
-                  className="h-7 rounded-full px-3 text-xs font-normal"
-                  onClick={() => setReason(reason === r ? '' : r)}
-                >
-                  {r}
-                </Button>
-              ))}
-            </div>
-            <Textarea
-              id="pito-reason"
-              placeholder="Or write your own…"
-              value={reason}
-              onChange={e => setReason(e.target.value)}
-              rows={2}
-            />
-          </div>
+          <ReasonPicker id="pito-reason" value={reason} onChange={setReason} />
         </div>
 
         <DialogFooter className="gap-2">
@@ -437,6 +455,9 @@ export default function PitoEquipmentAvailabilityPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [formEquipmentId, setFormEquipmentId] = useState('');
+  const [panelRange, setPanelRange] = useState<DateRange | undefined>();
+  const [panelReason, setPanelReason] = useState('');
+  const [panelSaving, setPanelSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Schedule | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -528,7 +549,27 @@ export default function PitoEquipmentAvailabilityPage() {
   const detail = rows.find(r => r.eq.id === detailId);
 
   const requestDelete = (s: Schedule) => { setDeleteTarget(s); setDeleteOpen(true); };
-  const openDetail = (id: string) => { setDetailId(id); setDetailOpen(true); };
+  const resetPanelBlock = () => { setPanelRange(undefined); setPanelReason(''); };
+  const openDetail = (id: string) => { resetPanelBlock(); setDetailId(id); setDetailOpen(true); };
+
+  const panel = rangeStrings(panelRange);
+  const panelOverlaps = !!detail && !!panel.from &&
+    detail.items.some(s => s.startDate <= panel.endStr && s.endDate >= panel.startStr);
+
+  const blockFromPanel = async () => {
+    if (!detail || !panel.from) return;
+    setPanelSaving(true);
+    try {
+      await createSchedule(detail.eq, panel.startStr, panel.endStr, panelReason);
+      toast.success(`${detail.eq.name} blocked for ${formatRange(panel.startStr, panel.endStr)}`);
+      resetPanelBlock();
+      await fetchSchedules();
+    } catch (err) {
+      toast.error(errorMessage(err, 'Failed to save schedule'));
+    } finally {
+      setPanelSaving(false);
+    }
+  };
   const openForm = (eqId = '') => { setFormEquipmentId(eqId); setFormOpen(true); };
   const jumpTo = (filter: 'all' | Status) => { setTab('equipment'); setStatusFilter(filter); };
 
@@ -779,7 +820,11 @@ export default function PitoEquipmentAvailabilityPage() {
                       <div className="space-y-3">
                         <div className="rounded-lg border">
                           <Calendar
+                            mode="range"
+                            selected={panelRange}
+                            onSelect={setPanelRange}
                             defaultMonth={new Date()}
+                            disabled={{ before: startOfToday() }}
                             modifiers={{ blocked: toRanges(detail.items) }}
                             modifiersClassNames={{ blocked: BLOCKED_DAY_CLASS }}
                             className="w-full bg-transparent"
@@ -787,7 +832,42 @@ export default function PitoEquipmentAvailabilityPage() {
                           />
                         </div>
                         <CalendarLegend />
+                        {!panel.from && (
+                          <p className="text-xs text-muted-foreground">
+                            Tap a date to block it, or tap two dates to block a range.
+                          </p>
+                        )}
                       </div>
+
+                      <AnimatePresence initial={false}>
+                        {panel.from && (
+                          <motion.div {...fadeUp} className="space-y-4 rounded-lg border bg-muted/30 p-4">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium">{formatRange(panel.startStr, panel.endStr)}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {plural(differenceInCalendarDays(panel.to!, panel.from) + 1, 'day')} selected
+                                </p>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={resetPanelBlock}
+                                disabled={panelSaving}
+                              >
+                                Clear
+                              </Button>
+                            </div>
+                            {panelOverlaps && (
+                              <p className="text-xs text-destructive">
+                                This overlaps an existing block for {detail.eq.name}.
+                              </p>
+                            )}
+                            <ReasonPicker id="pito-panel-reason" value={panelReason} onChange={setPanelReason} />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
 
                       <Separator />
 
@@ -821,8 +901,13 @@ export default function PitoEquipmentAvailabilityPage() {
                   </ScrollArea>
 
                   <SheetFooter className="border-t p-4">
-                    <Button onClick={() => openForm(detail.eq.id)}>
-                      <Plus /> Block dates
+                    <Button onClick={blockFromPanel} disabled={!panel.from || panelSaving}>
+                      {panelSaving ? <Spinner /> : <CalendarOff />}
+                      {panelSaving
+                        ? 'Blocking…'
+                        : panel.from
+                          ? `Block ${formatRange(panel.startStr, panel.endStr)}`
+                          : 'Select dates to block'}
                     </Button>
                   </SheetFooter>
                 </>
