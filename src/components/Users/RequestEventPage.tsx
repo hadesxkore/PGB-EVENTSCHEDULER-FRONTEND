@@ -1710,8 +1710,8 @@ const RequestEventPage: React.FC = () => {
           }
         }
 
-        // **PITO Default Requirements Auto-Population**
-        // When PITO is selected, auto-populate default requirements
+        // **PITO Default Requirements Auto-Population with Live Availability Check**
+        // When PITO is selected, auto-populate default requirements then check availability
         setSelectedDepartment(departmentName);
         setLoadingDepartmentRequirements(true);
         setShowRequirementsModal(true);
@@ -1728,6 +1728,38 @@ const RequestEventPage: React.FC = () => {
         const isKagitingan = typeof formData.location === 'string' && 
           formData.location.toLowerCase().includes('kagitingan');
 
+        // ── Fetch PITO equipment unavailability from backend ──
+        let pitoUnavailableNames: string[] = [];
+        try {
+          const token = localStorage.getItem('authToken');
+          if (token && formData.startDate) {
+            const startStr = typeof formData.startDate === 'string'
+              ? formData.startDate
+              : (formData.startDate as Date).toISOString().split('T')[0];
+            const endStr = formData.endDate
+              ? (typeof formData.endDate === 'string' ? formData.endDate : (formData.endDate as Date).toISOString().split('T')[0])
+              : startStr;
+            const checkRes = await fetch(`${API_BASE_URL}/resource-availability/pito/check`, {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ startDate: startStr, endDate: endStr }),
+            });
+            if (checkRes.ok) {
+              const checkData = await checkRes.json();
+              if (checkData.success) pitoUnavailableNames = checkData.unavailableNames || [];
+            }
+          }
+        } catch {
+          // Silently fail – don't block user from continuing
+        }
+
+        const makePitoNote = (name: string, baseNote?: string): string => {
+          if (pitoUnavailableNames.includes(name)) {
+            return 'This equipment is currently unavailable for your selected dates (marked by PITO). Please coordinate with PITO directly.';
+          }
+          return baseNote || '';
+        };
+
         // Define PITO default requirements
         const pitoDefaultRequirements: DepartmentRequirement[] = [
           {
@@ -1737,11 +1769,11 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.'
-              : 'If used outside PGB, this needs dismantling "” please coordinate with PGSO for transportation.',
+              : makePitoNote('LED Wall with Operator', 'If used outside PGB, this needs dismantling \u2014 please coordinate with PGSO for transportation.'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !isKagitingan, // Disabled for ANY Kagitingan Hall location
+            isAvailable: !isKagitingan && !pitoUnavailableNames.includes('LED Wall with Operator'),
             isCustom: true
           },
           {
@@ -1751,11 +1783,11 @@ const RequestEventPage: React.FC = () => {
             notes: '',
             availabilityNotes: isKagitingan 
               ? 'LED Wall is not possible for Kagitingan Hall due to ceiling height.' 
-              : 'If used outside PGB, this needs dismantling "” please coordinate with PGSO for transportation.',
+              : makePitoNote('LED Wall', 'If used outside PGB, this needs dismantling \u2014 please coordinate with PGSO for transportation.'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: !isKagitingan, // Disabled for ANY Kagitingan Hall location
+            isAvailable: !isKagitingan && !pitoUnavailableNames.includes('LED Wall'),
             isCustom: true
           },
           {
@@ -1763,10 +1795,11 @@ const RequestEventPage: React.FC = () => {
             name: 'Projector with VGA',
             selected: false,
             notes: '',
+            availabilityNotes: makePitoNote('Projector with VGA'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: true,
+            isAvailable: !pitoUnavailableNames.includes('Projector with VGA'),
             isCustom: true
           },
           {
@@ -1774,23 +1807,24 @@ const RequestEventPage: React.FC = () => {
             name: 'Internet Connection',
             selected: false,
             notes: '',
+            availabilityNotes: makePitoNote('Internet Connection'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: true,
+            isAvailable: !pitoUnavailableNames.includes('Internet Connection'),
             isCustom: true,
-            serviceType: 'yesno' // Special type to trigger input field for number of users
+            serviceType: 'yesno'
           },
           {
             id: `pito-tv-${Date.now()}`,
             name: 'TV',
             selected: false,
             notes: '',
-            availabilityNotes: 'If used outside PGB, this needs dismantling "” please coordinate with PGSO for transportation.',
+            availabilityNotes: makePitoNote('TV', 'If used outside PGB, this needs dismantling \u2014 please coordinate with PGSO for transportation.'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: true,
+            isAvailable: !pitoUnavailableNames.includes('TV'),
             isCustom: true
           },
           {
@@ -1798,10 +1832,11 @@ const RequestEventPage: React.FC = () => {
             name: '10-meter HDMI Cable',
             selected: false,
             notes: '',
+            availabilityNotes: makePitoNote('10-meter HDMI Cable'),
             type: 'service',
             quantity: undefined,
             totalQuantity: undefined,
-            isAvailable: true,
+            isAvailable: !pitoUnavailableNames.includes('10-meter HDMI Cable'),
             isCustom: true
           }
         ];

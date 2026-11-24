@@ -14,9 +14,9 @@ import { useMessagesStore } from '@/stores/messagesStore';
 
 import { useSocket, getGlobalSocket } from '@/hooks/useSocket';
 
-import { 
+import {
 
-  Calendar, 
+  Calendar,
 
   CalendarDays,
 
@@ -24,9 +24,9 @@ import {
 
   MapPin,
 
-  MessageSquare, 
+  MessageSquare,
 
-  Building2, 
+  Building2,
 
   LogOut,
 
@@ -52,7 +52,9 @@ import {
 
   ChevronRight,
 
-  ClipboardList
+  ClipboardList,
+
+  Monitor
 
 } from 'lucide-react';
 
@@ -160,7 +162,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     }
 
-    
+
 
     return () => {
 
@@ -200,31 +202,31 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
   const [eventCount, setEventCount] = useState(0);
 
-  
+
 
   // Location event count state for Manage Location badge
 
   const [locationEventCount, setLocationEventCount] = useState(0);
 
-  
+
 
   // Tagged departments ongoing events count
 
   const [taggedDepartmentsCount, setTaggedDepartmentsCount] = useState(0);
 
-  
+
 
   // All events count (all statuses: submitted, approved, rejected, etc.)
 
   const [allEventsCount, setAllEventsCount] = useState(0);
 
-  
+
 
   // My Events badge count (tagged requirements count - same logic as MyEventsPage)
 
   const [myEventsBadgeCount, setMyEventsBadgeCount] = useState(0);
 
-  
+
 
   // Track if My Events badge has been viewed
 
@@ -246,7 +248,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
   const [bacRequestsPendingCount, setBacRequestsPendingCount] = useState(0);
 
-  
+
 
   // Track if Event Reports badge has been viewed
 
@@ -256,7 +258,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
   );
 
-  
+
 
   // Listen for My Events badge viewed event
 
@@ -326,7 +328,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         if (!token) return;
 
-        
+
 
         const response = await axios.get(`${API_BASE_URL}/events/my?recalcAvailability=false`, {
 
@@ -334,7 +336,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
@@ -350,7 +352,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           });
 
-          
+
 
           // Count events with pending reports
 
@@ -370,7 +372,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
               ].filter(Boolean).length;
 
-              
+
 
               if (completed < 2) {
 
@@ -386,7 +388,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           });
 
-          
+
 
           // Update badge count in real-time
 
@@ -430,7 +432,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         if (!token) return;
 
-        
+
 
         const response = await axios.get(`${API_BASE_URL}/events`, {
 
@@ -438,7 +440,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
@@ -450,7 +452,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
             const isForDepartment = event.taggedDepartments?.includes(currentUser.department) ||
 
-                                   event.requestorDepartment === currentUser.department;
+              event.requestorDepartment === currentUser.department;
 
             const isApproved = event.status === 'approved';
 
@@ -472,7 +474,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     };
 
-    
+
 
     if (currentUser.department && currentUser.department !== "Department") {
 
@@ -496,7 +498,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         if (!token) return;
 
-        
+
 
         const response = await axios.get(`${API_BASE_URL}/events`, {
 
@@ -504,7 +506,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
@@ -512,9 +514,9 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           // Count all events that have location bookings - ONLY APPROVED
 
-          const locationBookedEvents = events.filter((event: any) => 
+          const locationBookedEvents = events.filter((event: any) =>
 
-            event.location && 
+            event.location &&
 
             event.location.trim() !== '' &&
 
@@ -536,7 +538,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     };
 
-    
+
 
     if (currentUser.department && currentUser.department !== "Department") {
 
@@ -560,7 +562,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         if (!token) return;
 
-        
+
 
         const response = await axios.get(`${API_BASE_URL}/events/tagged`, {
 
@@ -568,7 +570,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
@@ -608,7 +610,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     };
 
-    
+
 
     if (currentUser.department && currentUser.department !== "Department" && permissions.taggedDepartments) {
 
@@ -632,7 +634,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         if (!token) return;
 
-        
+
 
         const response = await axios.get(`${API_BASE_URL}/events`, {
 
@@ -640,7 +642,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
@@ -662,7 +664,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     };
 
-    
+
 
     if (currentUser.department && currentUser.department !== "Department" && permissions.allEvents) {
 
@@ -686,7 +688,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         if (!token) return;
 
-        
+
 
         const response = await axios.get(`${API_BASE_URL}/events/my?recalcAvailability=false`, {
 
@@ -694,13 +696,13 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
           const events = response.data.data || [];
 
-          
+
 
           // Count ALL events that have department requirements (tagged requirements)
 
@@ -716,7 +718,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           });
 
-          
+
 
           setMyEventsBadgeCount(count);
 
@@ -742,7 +744,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     };
 
-    
+
 
     if (currentUser.department && currentUser.department !== "Department") {
 
@@ -766,7 +768,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         if (!token) return;
 
-        
+
 
         const response = await axios.get(`${API_BASE_URL}/events/my?recalcAvailability=false`, {
 
@@ -774,7 +776,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
@@ -790,7 +792,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           });
 
-          
+
 
           // Count events with pending reports (not all reports completed)
 
@@ -810,7 +812,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
               ].filter(Boolean).length;
 
-              
+
 
               // If not all 2 reports are completed, count as pending
 
@@ -830,7 +832,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           });
 
-          
+
 
           // Update badge count - badge will hide automatically when count reaches 0
 
@@ -848,7 +850,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     };
 
-    
+
 
     if (currentUser.department && currentUser.department !== "Department") {
 
@@ -870,7 +872,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
       if (!token) return;
 
-      
+
 
       const response = await axios.get(`${API_BASE_URL}/events`, {
 
@@ -878,13 +880,13 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
       });
 
-      
+
 
       if (response.data.success) {
 
         const events = response.data.data || [];
 
-        
+
 
         // Update My Calendar count - ONLY APPROVED events
 
@@ -892,7 +894,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           const isForDepartment = event.taggedDepartments?.includes(currentUser.department) ||
 
-                                 event.requestorDepartment === currentUser.department;
+            event.requestorDepartment === currentUser.department;
 
           const isApproved = event.status === 'approved';
 
@@ -902,15 +904,15 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         setEventCount(departmentEvents.length);
 
-        
+
 
         // Update Manage Location count - ONLY APPROVED
 
         if (permissions.manageLocation) {
 
-          const locationBookedEvents = events.filter((event: any) => 
+          const locationBookedEvents = events.filter((event: any) =>
 
-            event.location && 
+            event.location &&
 
             event.location.trim() !== '' &&
 
@@ -922,7 +924,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         }
 
-        
+
 
         // Update All Events count - ALL STATUSES
 
@@ -946,7 +948,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (taggedResponse.data.success) {
 
@@ -986,7 +988,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
       });
 
-      
+
 
       if (myEventsResponse.data.success) {
 
@@ -994,7 +996,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         const viewedEvents = new Set(JSON.parse(localStorage.getItem('viewedTaggedRequirementsEvents') || '[]'));
 
-        
+
 
         // Count only UNVIEWED events that have updates
 
@@ -1010,7 +1012,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
           }
 
-          
+
 
           if (event.departmentRequirements) {
 
@@ -1044,7 +1046,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
             });
 
-            
+
 
             if (hasUpdates) {
 
@@ -1132,7 +1134,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
     window.addEventListener('storage', handleStorageChange);
 
-    
+
 
     return () => {
 
@@ -1154,7 +1156,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
       const handleStatusUpdate = (data: any) => {
 
-        
+
 
         // Immediately refresh badge counts (non-blocking)
 
@@ -1174,41 +1176,41 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
               })
 
-              .then(taggedResponse => {
+                .then(taggedResponse => {
 
-                if (taggedResponse.data.success) {
+                  if (taggedResponse.data.success) {
 
-                  const taggedEvents = taggedResponse.data.data || [];
+                    const taggedEvents = taggedResponse.data.data || [];
 
-                  const ongoingEvents = taggedEvents.filter((event: any) => {
+                    const ongoingEvents = taggedEvents.filter((event: any) => {
 
-                    const eventStatus = (event.status || '').toLowerCase();
+                      const eventStatus = (event.status || '').toLowerCase();
 
-                    if (eventStatus !== 'approved' && eventStatus !== 'completed') return false;
+                      if (eventStatus !== 'approved' && eventStatus !== 'completed') return false;
 
-                    const userDeptReqs = event.departmentRequirements?.[currentUser.department] || [];
+                      const userDeptReqs = event.departmentRequirements?.[currentUser.department] || [];
 
-                    const releasedReqs = userDeptReqs.filter((r: any) => !r.requirementsStatus || r.requirementsStatus === 'released');
+                      const releasedReqs = userDeptReqs.filter((r: any) => !r.requirementsStatus || r.requirementsStatus === 'released');
 
-                    const totalCount = releasedReqs.length;
+                      const totalCount = releasedReqs.length;
 
-                    const pendingCount = releasedReqs.filter((r: any) => (r.status || 'pending') === 'pending').length;
+                      const pendingCount = releasedReqs.filter((r: any) => (r.status || 'pending') === 'pending').length;
 
-                    return totalCount > 0 && pendingCount > 0;
+                      return totalCount > 0 && pendingCount > 0;
 
-                  });
+                    });
 
-                  setTaggedDepartmentsCount(ongoingEvents.length);
+                    setTaggedDepartmentsCount(ongoingEvents.length);
 
-                }
+                  }
 
-              })
+                })
 
-              .catch(error => {
+                .catch(error => {
 
-                // Failed to update badge
+                  // Failed to update badge
 
-              });
+                });
 
             }
 
@@ -1222,51 +1224,51 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
             })
 
-            .then(myEventsResponse => {
+              .then(myEventsResponse => {
 
-              if (myEventsResponse.data.success) {
+                if (myEventsResponse.data.success) {
 
-                const myEvents = myEventsResponse.data.data || [];
+                  const myEvents = myEventsResponse.data.data || [];
 
-                
 
-                // Count ALL events that have department requirements (tagged requirements)
 
-                let count = 0;
+                  // Count ALL events that have department requirements (tagged requirements)
 
-                myEvents.forEach((event: any) => {
+                  let count = 0;
 
-                  if (event.departmentRequirements && Object.keys(event.departmentRequirements).length > 0) {
+                  myEvents.forEach((event: any) => {
 
-                    count += 1;
+                    if (event.departmentRequirements && Object.keys(event.departmentRequirements).length > 0) {
+
+                      count += 1;
+
+                    }
+
+                  });
+
+
+
+                  setMyEventsBadgeCount(count);
+
+                  // Show badge if there are any events with tagged requirements
+
+                  if (count > 0) {
+
+                    setMyEventsBadgeViewed(false);
+
+                    localStorage.removeItem('myEventsBadgeViewed');
 
                   }
 
-                });
-
-                
-
-                setMyEventsBadgeCount(count);
-
-                // Show badge if there are any events with tagged requirements
-
-                if (count > 0) {
-
-                  setMyEventsBadgeViewed(false);
-
-                  localStorage.removeItem('myEventsBadgeViewed');
-
                 }
 
-              }
+              })
 
-            })
+              .catch(error => {
 
-            .catch(error => {
+                // Failed to update badge
 
-              // Failed to update badge
-
-            });
+              });
 
 
 
@@ -1278,73 +1280,73 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
             })
 
-            .then(eventReportsResponse => {
+              .then(eventReportsResponse => {
 
-              if (eventReportsResponse.data.success) {
+                if (eventReportsResponse.data.success) {
 
-                const events = eventReportsResponse.data.data || [];
+                  const events = eventReportsResponse.data.data || [];
 
-                // Filter for ongoing/approved events
+                  // Filter for ongoing/approved events
 
-                const ongoingEvents = events.filter((event: any) => {
+                  const ongoingEvents = events.filter((event: any) => {
 
-                  const status = event.status?.toLowerCase();
+                    const status = event.status?.toLowerCase();
 
-                  return status === 'approved' || status === 'ongoing';
+                    return status === 'approved' || status === 'ongoing';
 
-                });
+                  });
 
-                
 
-                // Count events with pending reports
 
-                let pendingCount = 0;
+                  // Count events with pending reports
 
-                ongoingEvents.forEach((event: any) => {
+                  let pendingCount = 0;
 
-                  const reports = event.eventReports;
+                  ongoingEvents.forEach((event: any) => {
 
-                  if (reports) {
+                    const reports = event.eventReports;
 
-                    const completed = [
+                    if (reports) {
 
-                      reports.completionReport?.uploaded,
+                      const completed = [
 
-                      reports.postActivityReport?.uploaded
+                        reports.completionReport?.uploaded,
 
-                    ].filter(Boolean).length;
+                        reports.postActivityReport?.uploaded
 
-                    
+                      ].filter(Boolean).length;
 
-                    if (completed < 2) {
+
+
+                      if (completed < 2) {
+
+                        pendingCount += 1;
+
+                      }
+
+                    } else {
 
                       pendingCount += 1;
 
                     }
 
-                  } else {
+                  });
 
-                    pendingCount += 1;
 
-                  }
 
-                });
+                  // Update badge count - badge will hide automatically when count reaches 0
 
-                
+                  setEventReportsBadgeCount(pendingCount);
 
-                // Update badge count - badge will hide automatically when count reaches 0
+                }
 
-                setEventReportsBadgeCount(pendingCount);
+              })
 
-              }
+              .catch(error => {
 
-            })
+                // Failed to update badge
 
-            .catch(error => {
-
-              // Failed to update badge
-
-            });
+              });
 
           }
 
@@ -1376,19 +1378,19 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
   // Use messages store for real-time unread counts
 
-  const { 
+  const {
 
-    initializeUser: initializeMessagesUser, 
+    initializeUser: initializeMessagesUser,
 
-    fetchEventConversations, 
+    fetchEventConversations,
 
     getTotalUnreadCount,
 
-    currentUser: messagesCurrentUser 
+    currentUser: messagesCurrentUser
 
   } = useMessagesStore();
 
-  
+
 
   // State for unread messages count
 
@@ -1518,7 +1520,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
   }, [currentUser.department, location.pathname]); // REMOVED fetchEventConversations and getTotalUnreadCount to prevent infinite loop
 
-  
+
 
 
 
@@ -1557,6 +1559,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
 
       const isBAC = (currentUser.department || '').trim().toLowerCase() === 'bac';
+      const isPITO = (currentUser.department || '').trim().toUpperCase() === 'PITO';
 
       if (!isBAC) {
 
@@ -1606,7 +1609,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         });
 
-        
+
 
         if (response.data.success) {
 
@@ -1655,6 +1658,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
     const socket = getGlobalSocket();
 
     const isBAC = (currentUser.department || '').trim().toLowerCase() === 'bac';
+    const isPITO = (currentUser.department || '').trim().toUpperCase() === 'PITO';
 
     if (!socket || !isBAC) return;
 
@@ -1700,13 +1704,14 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
   }, [currentUser.department]);
 
-  
+
 
   // Dynamic navigation items based on permissions - GROUPED
 
   const getNavigationGroups = () => {
 
     const isBAC = (currentUser.department || '').trim().toLowerCase() === 'bac';
+    const isPITO = (currentUser.department || '').trim().toUpperCase() === 'PITO';
 
 
 
@@ -1722,11 +1727,13 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         { icon: LayoutDashboard, label: 'Dashboard', href: '/users/dashboard' },
 
-        { icon: CalendarPlus, label: 'Request Event', href: '/users/request-event', hasSubmenu: true, submenu: [
+        {
+          icon: CalendarPlus, label: 'Request Event', href: '/users/request-event', hasSubmenu: true, submenu: [
 
-          { icon: BookOpen, label: 'Request Event Guide', href: '/users/request-event-guide' }
+            { icon: BookOpen, label: 'Request Event Guide', href: '/users/request-event-guide' }
 
-        ]},
+          ]
+        },
 
         { icon: CalendarDays, label: 'Calendar', href: '/users/calendar' },
 
@@ -1737,6 +1744,8 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
         { icon: FileText, label: 'Event Reports', href: '/users/event-reports' },
 
         ...(isBAC ? [{ icon: ClipboardList, label: 'BAC Requests', href: '/users/bac-requests' }] : []),
+
+        ...(isPITO || isAdminLike ? [{ icon: Monitor, label: 'Equipment Availability', href: '/users/pito-equipment' }] : []),
 
       ]
 
@@ -1824,7 +1833,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
       const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api`;
 
-      
+
 
       // Call logout endpoint to clear HTTP-Only cookie
 
@@ -1916,9 +1925,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         flex flex-col h-screen bg-white border-r border-gray-200 shadow-sm transition-all duration-300
 
-        ${
-
-          isCollapsed ? 'lg:w-16' : 'lg:w-64'
+        ${isCollapsed ? 'lg:w-16' : 'lg:w-64'
 
         }
 
@@ -1928,487 +1935,465 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         fixed top-0 left-0 z-50
 
-        ${
-
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
 
         }
 
       `}>
 
-      {/* Header */}
+        {/* Header */}
 
-      <div className="flex items-center gap-3 p-4 border-b border-gray-100 relative">
+        <div className="flex items-center gap-3 p-4 border-b border-gray-100 relative">
 
-        <img 
+          <img
 
-          src="/images/bataanlogo.png" 
+            src="/images/bataanlogo.png"
 
-          alt="Bataan Logo" 
+            alt="Bataan Logo"
 
-          className="w-8 h-8 object-contain flex-shrink-0"
+            className="w-8 h-8 object-contain flex-shrink-0"
 
-        />
+          />
 
-        <div className={`flex-1 min-w-0 transition-opacity duration-200 ${
+          <div className={`flex-1 min-w-0 transition-opacity duration-200 ${isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
 
-          isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
+            }`}>
 
-        }`}>
+            <h2 className="text-sm font-semibold text-gray-900 truncate">Event Scheduler</h2>
 
-          <h2 className="text-sm font-semibold text-gray-900 truncate">Event Scheduler</h2>
+            <p className="text-xs text-blue-600 truncate">Provincial Government</p>
 
-          <p className="text-xs text-blue-600 truncate">Provincial Government</p>
+          </div>
+
+
+
+          {/* Floating Toggle Button - Only on desktop */}
+
+          <Button
+
+            variant="ghost"
+
+            size="icon"
+
+            onClick={() => setIsCollapsed(!isCollapsed)}
+
+            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 bg-white border border-gray-200 hover:bg-gray-50 rounded-full shadow-sm z-10"
+
+          >
+
+            <PanelLeft className={`h-3 w-3 transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''
+
+              }`} />
+
+          </Button>
 
         </div>
 
-        
 
-        {/* Floating Toggle Button - Only on desktop */}
 
-        <Button
+        {/* Navigation */}
 
-          variant="ghost"
+        <nav className="flex-1 p-2 space-y-3 overflow-y-auto">
 
-          size="icon"
+          {navigationGroups.map((group, groupIndex) => (
 
-          onClick={() => setIsCollapsed(!isCollapsed)}
+            <div key={groupIndex} className="space-y-1">
 
-          className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 bg-white border border-gray-200 hover:bg-gray-50 rounded-full shadow-sm z-10"
+              {/* Group Label */}
 
-        >
+              {!isCollapsed && (
 
-          <PanelLeft className={`h-3 w-3 transition-transform duration-200 ${
+                <div className="px-3 py-1">
 
-            isCollapsed ? 'rotate-180' : ''
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
 
-          }`} />
+                    {group.label}
 
-        </Button>
+                  </p>
 
-      </div>
+                </div>
 
-      
+              )}
 
-      {/* Navigation */}
 
-      <nav className="flex-1 p-2 space-y-3 overflow-y-auto">
 
-        {navigationGroups.map((group, groupIndex) => (
+              {/* Group Items */}
 
-          <div key={groupIndex} className="space-y-1">
+              {group.items.map((item: any) => {
 
-            {/* Group Label */}
+                const Icon = item.icon;
 
-            {!isCollapsed && (
+                const isActive = location.pathname === item.href;
 
-              <div className="px-3 py-1">
+                const isMyCalendar = item.label === 'My Calendar';
 
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                const isMessages = item.label === 'Messages';
 
-                  {group.label}
+                const isManageLocation = item.label === 'Manage Location';
 
-                </p>
+                const isTaggedDepartments = item.label === 'Tagged Departments';
 
-              </div>
+                const isAllEvents = item.label === 'All Events';
 
-            )}
+                const isRequestEvent = item.label === 'Request Event';
 
-            
+                const isMyEvents = item.label === 'My Events';
 
-            {/* Group Items */}
+                const isEventReports = item.label === 'Event Reports';
 
-            {group.items.map((item: any) => {
+                const isBacRequests = item.label === 'BAC Requests';
 
-              const Icon = item.icon;
+                const totalEventCount = isMyCalendar ? eventCount : 0;
 
-              const isActive = location.pathname === item.href;
+                const hasSubmenu = item.hasSubmenu && item.submenu;
 
-              const isMyCalendar = item.label === 'My Calendar';
+                const isSubmenuOpen = isRequestEvent && requestEventOpen;
 
-              const isMessages = item.label === 'Messages';
 
-              const isManageLocation = item.label === 'Manage Location';
 
-              const isTaggedDepartments = item.label === 'Tagged Departments';
+                return (
 
-              const isAllEvents = item.label === 'All Events';
+                  <div key={item.label}>
 
-              const isRequestEvent = item.label === 'Request Event';
+                    <div className="relative">
 
-              const isMyEvents = item.label === 'My Events';
-
-              const isEventReports = item.label === 'Event Reports';
-
-              const isBacRequests = item.label === 'BAC Requests';
-
-              const totalEventCount = isMyCalendar ? eventCount : 0;
-
-              const hasSubmenu = item.hasSubmenu && item.submenu;
-
-              const isSubmenuOpen = isRequestEvent && requestEventOpen;
-
-              
-
-              return (
-
-                <div key={item.label}>
-
-                  <div className="relative">
-
-                    <div className="flex items-center gap-0">
-
-                      <Button
-
-                        variant="ghost"
-
-                        onClick={() => {
-
-                          handleNavigation(item.href);
-
-                          setIsMobileMenuOpen(false);
-
-                        }}
-
-                        className={`flex-1 h-10 transition-all duration-200 ${
-
-                          isActive 
-
-                            ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-600'
-
-                            : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-
-                        } ${
-
-                          isCollapsed 
-
-                            ? 'lg:justify-center lg:px-2' 
-
-                            : 'justify-start gap-3 px-3'
-
-                        } ${hasSubmenu && !isCollapsed ? 'rounded-r-none' : ''}`}
-
-                        title={isCollapsed ? item.label : undefined}
-
-                      >
-
-                        <Icon className="h-5 w-5 flex-shrink-0" />
-
-                        <span className={`flex-1 text-left truncate transition-opacity duration-200 ${
-
-                          isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
-
-                        }`}>
-
-                          {item.label}
-
-                        </span>
-
-                      </Button>
-
-                      {hasSubmenu && !isCollapsed && (
+                      <div className="flex items-center gap-0">
 
                         <Button
 
                           variant="ghost"
 
-                          size="sm"
+                          onClick={() => {
 
-                          onClick={() => setRequestEventOpen(!requestEventOpen)}
+                            handleNavigation(item.href);
 
-                          className={`h-10 w-8 p-0 rounded-l-none ${
+                            setIsMobileMenuOpen(false);
 
-                            isActive 
+                          }}
 
-                              ? 'text-blue-700 hover:bg-blue-200'
+                          className={`flex-1 h-10 transition-all duration-200 ${isActive
 
-                              : 'text-gray-700 hover:bg-blue-50'
+                              ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-600'
 
-                          }`}
+                              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+
+                            } ${isCollapsed
+
+                              ? 'lg:justify-center lg:px-2'
+
+                              : 'justify-start gap-3 px-3'
+
+                            } ${hasSubmenu && !isCollapsed ? 'rounded-r-none' : ''}`}
+
+                          title={isCollapsed ? item.label : undefined}
 
                         >
 
-                          {isSubmenuOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                          <Icon className="h-5 w-5 flex-shrink-0" />
+
+                          <span className={`flex-1 text-left truncate transition-opacity duration-200 ${isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
+
+                            }`}>
+
+                            {item.label}
+
+                          </span>
 
                         </Button>
+
+                        {hasSubmenu && !isCollapsed && (
+
+                          <Button
+
+                            variant="ghost"
+
+                            size="sm"
+
+                            onClick={() => setRequestEventOpen(!requestEventOpen)}
+
+                            className={`h-10 w-8 p-0 rounded-l-none ${isActive
+
+                                ? 'text-blue-700 hover:bg-blue-200'
+
+                                : 'text-gray-700 hover:bg-blue-50'
+
+                              }`}
+
+                          >
+
+                            {isSubmenuOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+
+                          </Button>
+
+                        )}
+
+                      </div>
+
+
+
+                      {/* Event Count Badge for My Calendar */}
+
+                      {isMyCalendar && totalEventCount > 0 && !isCollapsed && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {totalEventCount > 99 ? '99+' : totalEventCount}
+
+                        </div>
+
+                      )}
+
+
+
+                      {/* Unread Messages Badge for Messages */}
+
+                      {isMessages && totalUnreadMessages > 0 && !isCollapsed && !unreadLoading && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
+
+                        </div>
+
+                      )}
+
+
+
+                      {/* Location Event Count Badge for Manage Location */}
+
+                      {isManageLocation && locationEventCount > 0 && !isCollapsed && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {locationEventCount > 99 ? '99+' : locationEventCount}
+
+                        </div>
+
+                      )}
+
+
+
+                      {/* Ongoing Events Count Badge for Tagged Departments */}
+
+                      {isTaggedDepartments && taggedDepartmentsCount > 0 && !isCollapsed && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {taggedDepartmentsCount > 99 ? '99+' : taggedDepartmentsCount}
+
+                        </div>
+
+                      )}
+
+
+
+                      {/* All Events Count Badge (all statuses) */}
+
+                      {isAllEvents && allEventsCount > 0 && !isCollapsed && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {allEventsCount > 99 ? '99+' : allEventsCount}
+
+                        </div>
+
+                      )}
+
+
+
+                      {/* My Events Badge Count (tagged requirements count) */}
+
+                      {isMyEvents && myEventsBadgeCount > 0 && !isCollapsed && !myEventsBadgeViewed && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {myEventsBadgeCount > 99 ? '99+' : myEventsBadgeCount}
+
+                        </div>
+
+                      )}
+
+
+
+                      {/* Event Reports Badge Count (pending reports count) */}
+
+                      {isEventReports && eventReportsBadgeCount > 0 && !isCollapsed && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {eventReportsBadgeCount > 99 ? '99+' : eventReportsBadgeCount}
+
+                        </div>
+
+                      )}
+
+
+
+                      {/* BAC Requests Pending Count Badge */}
+
+                      {isBacRequests && bacRequestsPendingCount > 0 && !isCollapsed && (
+
+                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+
+                          {bacRequestsPendingCount > 99 ? '99+' : bacRequestsPendingCount}
+
+                        </div>
 
                       )}
 
                     </div>
 
-                  
-
-                  {/* Event Count Badge for My Calendar */}
-
-                  {isMyCalendar && totalEventCount > 0 && !isCollapsed && (
-
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
-
-                      {totalEventCount > 99 ? '99+' : totalEventCount}
-
-                    </div>
-
-                  )}
 
 
+                    {/* Submenu */}
 
-                  {/* Unread Messages Badge for Messages */}
+                    {hasSubmenu && isSubmenuOpen && !isCollapsed && (
 
-                  {isMessages && totalUnreadMessages > 0 && !isCollapsed && !unreadLoading && (
+                      <div className="ml-8 mt-1 space-y-1">
 
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        {item.submenu.map((subItem: any) => {
 
-                      {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
+                          const SubIcon = subItem.icon;
 
-                    </div>
-
-                  )}
+                          const isSubActive = location.pathname === subItem.href;
 
 
 
-                  {/* Location Event Count Badge for Manage Location */}
+                          return (
 
-                  {isManageLocation && locationEventCount > 0 && !isCollapsed && (
+                            <Button
 
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                              key={subItem.label}
 
-                      {locationEventCount > 99 ? '99+' : locationEventCount}
+                              variant="ghost"
 
-                    </div>
+                              onClick={() => {
 
-                  )}
+                                handleNavigation(subItem.href);
 
+                                setIsMobileMenuOpen(false);
 
+                              }}
 
-                  {/* Ongoing Events Count Badge for Tagged Departments */}
+                              className={`w-full h-9 transition-all duration-200 ${isSubActive
 
-                  {isTaggedDepartments && taggedDepartmentsCount > 0 && !isCollapsed && (
+                                  ? 'bg-blue-50 text-blue-700'
 
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
 
-                      {taggedDepartmentsCount > 99 ? '99+' : taggedDepartmentsCount}
+                                } justify-start gap-2 px-3 text-sm`}
 
-                    </div>
+                            >
 
-                  )}
+                              <SubIcon className="h-4 w-4 flex-shrink-0" />
 
+                              <span className="truncate">{subItem.label}</span>
 
+                            </Button>
 
-                  {/* All Events Count Badge (all statuses) */}
+                          );
 
-                  {isAllEvents && allEventsCount > 0 && !isCollapsed && (
+                        })}
 
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                      </div>
 
-                      {allEventsCount > 99 ? '99+' : allEventsCount}
-
-                    </div>
-
-                  )}
-
-
-
-                  {/* My Events Badge Count (tagged requirements count) */}
-
-                  {isMyEvents && myEventsBadgeCount > 0 && !isCollapsed && !myEventsBadgeViewed && (
-
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
-
-                      {myEventsBadgeCount > 99 ? '99+' : myEventsBadgeCount}
-
-                    </div>
-
-                  )}
-
-
-
-                  {/* Event Reports Badge Count (pending reports count) */}
-
-                  {isEventReports && eventReportsBadgeCount > 0 && !isCollapsed && (
-
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
-
-                      {eventReportsBadgeCount > 99 ? '99+' : eventReportsBadgeCount}
-
-                    </div>
-
-                  )}
-
-
-
-                  {/* BAC Requests Pending Count Badge */}
-
-                  {isBacRequests && bacRequestsPendingCount > 0 && !isCollapsed && (
-
-                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
-
-                      {bacRequestsPendingCount > 99 ? '99+' : bacRequestsPendingCount}
-
-                    </div>
-
-                  )}
+                    )}
 
                   </div>
 
+                );
+
+              })}
 
 
-                  {/* Submenu */}
 
-                  {hasSubmenu && isSubmenuOpen && !isCollapsed && (
+              {/* Separator between groups (except after last group) */}
 
-                    <div className="ml-8 mt-1 space-y-1">
+              {groupIndex < navigationGroups.length - 1 && (
 
-                      {item.submenu.map((subItem: any) => {
+                <Separator className="my-3" />
 
-                        const SubIcon = subItem.icon;
+              )}
 
-                        const isSubActive = location.pathname === subItem.href;
+            </div>
 
-                        
+          ))}
 
-                        return (
+        </nav>
 
-                          <Button
 
-                            key={subItem.label}
 
-                            variant="ghost"
+        {/* Footer */}
 
-                            onClick={() => {
+        <div className="border-t border-gray-100 p-4 space-y-3">
 
-                              handleNavigation(subItem.href);
+          <div className="flex items-center gap-3">
 
-                              setIsMobileMenuOpen(false);
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
 
-                            }}
+              <span className="text-sm font-bold text-white">
 
-                            className={`w-full h-9 transition-all duration-200 ${
+                {currentUser.department?.charAt(0)?.toUpperCase() || 'D'}
 
-                              isSubActive 
+              </span>
 
-                                ? 'bg-blue-50 text-blue-700'
+            </div>
 
-                                : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+            <div className={`flex-1 min-w-0 transition-opacity duration-200 ${isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
 
-                            } justify-start gap-2 px-3 text-sm`}
+              }`}>
 
-                          >
+              <p className="text-sm font-semibold text-gray-900 truncate">{currentUser.department}</p>
 
-                            <SubIcon className="h-4 w-4 flex-shrink-0" />
+              <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
 
-                            <span className="truncate">{subItem.label}</span>
-
-                          </Button>
-
-                        );
-
-                      })}
-
-                    </div>
-
-                  )}
-
-                </div>
-
-              );
-
-            })}
-
-            
-
-            {/* Separator between groups (except after last group) */}
-
-            {groupIndex < navigationGroups.length - 1 && (
-
-              <Separator className="my-3" />
-
-            )}
+            </div>
 
           </div>
 
-        ))}
 
-      </nav>
 
-      
+          {/* Logout Button */}
 
-      {/* Footer */}
+          <Button
 
-      <div className="border-t border-gray-100 p-4 space-y-3">
+            variant="ghost"
 
-        <div className="flex items-center gap-3">
+            onClick={() => {
 
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+              handleLogout();
 
-            <span className="text-sm font-bold text-white">
+              setIsMobileMenuOpen(false); // Close mobile menu on logout
 
-              {currentUser.department?.charAt(0)?.toUpperCase() || 'D'}
+            }}
+
+            className={`w-full h-9 transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 ${isCollapsed
+
+                ? 'lg:justify-center lg:px-2'
+
+                : 'justify-start gap-3 px-3'
+
+              }`}
+
+            title={isCollapsed ? 'Logout' : undefined}
+
+          >
+
+            <LogOut className="h-4 w-4 flex-shrink-0" />
+
+            <span className={`truncate transition-opacity duration-200 ${isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
+
+              }`}>
+
+              Logout
 
             </span>
 
-          </div>
-
-          <div className={`flex-1 min-w-0 transition-opacity duration-200 ${
-
-            isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
-
-          }`}>
-
-            <p className="text-sm font-semibold text-gray-900 truncate">{currentUser.department}</p>
-
-            <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
-
-          </div>
+          </Button>
 
         </div>
 
-        
-
-        {/* Logout Button */}
-
-        <Button
-
-          variant="ghost"
-
-          onClick={() => {
-
-            handleLogout();
-
-            setIsMobileMenuOpen(false); // Close mobile menu on logout
-
-          }}
-
-          className={`w-full h-9 transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 ${
-
-            isCollapsed 
-
-              ? 'lg:justify-center lg:px-2' 
-
-              : 'justify-start gap-3 px-3'
-
-          }`}
-
-          title={isCollapsed ? 'Logout' : undefined}
-
-        >
-
-          <LogOut className="h-4 w-4 flex-shrink-0" />
-
-          <span className={`truncate transition-opacity duration-200 ${
-
-            isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
-
-          }`}>
-
-            Logout
-
-          </span>
-
-        </Button>
-
       </div>
-
-    </div>
 
     </>
 
