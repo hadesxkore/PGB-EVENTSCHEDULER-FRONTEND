@@ -11,7 +11,7 @@ import MyEventsPage from './components/Users/MyEventsPage'
 import MyCalendarPage from './components/Users/MyCalendarPage'
 import MyRequirementsPage from './components/Users/MyRequirementsPage'
 import ManageLocationPage from './components/Users/ManageLocationPage'
-import MessagesPage from './components/Users/MessagesPage'
+// import MessagesPage from './components/Users/MessagesPage' // Messages page temporarily disabled
 import TaggedDepartmentPage from './components/Users/TaggedDepartmentPage'
 import UserAllEventsPage from './components/Users/AllEventsPage'
 import EventReportsPage from './components/Users/EventReportsPage'
@@ -153,7 +153,8 @@ function App() {
                   <Route path="manage-location" element={<ManageLocationPage />} />
                   <Route path="calendar" element={<LocationAvailabilityCalendarPage />} />
                   <Route path="all-events" element={<UserAllEventsPage />} />
-                  <Route path="messages" element={<MessagesPage />} />
+                  {/* Messages page temporarily disabled (not needed for now) */}
+                  {/* <Route path="messages" element={<MessagesPage />} /> */}
                   <Route path="tagged-departments" element={<TaggedDepartmentPage />} />
                   <Route path="event-reports" element={<EventReportsPage />} />
                   <Route path="request-event-guide" element={<RequestEventGuidePage />} />

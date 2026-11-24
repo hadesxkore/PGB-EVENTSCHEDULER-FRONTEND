@@ -24,7 +24,7 @@ import {
 
   MapPin,
 
-  MessageSquare,
+  // MessageSquare, // Messages page temporarily disabled
 
   Building2,
 
@@ -1739,7 +1739,8 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         { icon: Calendar, label: 'My Events', href: '/users/my-events' },
 
-        { icon: MessageSquare, label: 'Messages', href: '/users/messages' },
+        // Messages page temporarily disabled (not needed for now)
+        // { icon: MessageSquare, label: 'Messages', href: '/users/messages' },
 
         { icon: FileText, label: 'Event Reports', href: '/users/event-reports' },
 
