@@ -46,11 +46,11 @@ interface UnavailabilitySchedule {
 
 const EQUIPMENT_ICONS: Record<string, React.ReactNode> = {
   'LED Wall with Operator': <Monitor className="w-4 h-4" />,
-  'LED Wall':               <PanelTop className="w-4 h-4" />,
-  'Projector with VGA':     <Monitor className="w-4 h-4" />,
-  'Internet Connection':    <Wifi className="w-4 h-4" />,
-  'TV':                     <Tv className="w-4 h-4" />,
-  '10-meter HDMI Cable':    <Cable className="w-4 h-4" />,
+  'LED Wall': <PanelTop className="w-4 h-4" />,
+  'Projector with VGA': <Monitor className="w-4 h-4" />,
+  'Internet Connection': <Wifi className="w-4 h-4" />,
+  'TV': <Tv className="w-4 h-4" />,
+  '10-meter HDMI Cable': <Cable className="w-4 h-4" />,
 };
 
 const REASON_PRESETS = [
@@ -111,7 +111,7 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
       </div>
 
       <div className="grid grid-cols-7 gap-0.5 mb-1">
-        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => (
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
           <div key={d} className="text-center text-xs font-medium text-gray-400 py-1">{d}</div>
         ))}
       </div>
@@ -136,9 +136,9 @@ const MiniCalendar: React.FC<MiniCalendarProps> = ({
                 past ? 'opacity-25 cursor-not-allowed' : 'cursor-pointer',
                 (isStart || isEnd) ? 'bg-purple-600 text-white' :
                   inSel ? 'bg-purple-100 text-purple-800' :
-                  unav ? 'bg-red-100 text-red-700 font-semibold' :
-                  today ? 'ring-1 ring-purple-400 text-purple-700' :
-                  'hover:bg-gray-100 text-gray-700',
+                    unav ? 'bg-red-100 text-red-700 font-semibold' :
+                      today ? 'ring-1 ring-purple-400 text-purple-700' :
+                        'hover:bg-gray-100 text-gray-700',
               ].join(' ')}
             >
               {format(d, 'd')}
@@ -204,7 +204,7 @@ const PitoEquipmentAvailabilityPage: React.FC = () => {
         if (dept === 'PITO' || role === 'admin' || role === 'superadmin') {
           setIsPito(true);
         }
-      } catch {}
+      } catch { }
     }
     setCheckingAuth(false);
   }, []);
@@ -327,9 +327,7 @@ const PitoEquipmentAvailabilityPage: React.FC = () => {
       await axios.delete(`${API_BASE_URL}/resource-availability/pito/schedules`, {
         headers: { Authorization: `Bearer ${token}` },
         data: {
-          equipmentId: deleteTarget.equipmentId,
-          startDate: deleteTarget.startDate,
-          endDate: deleteTarget.endDate,
+          scheduleId: deleteTarget.id,
         },
       });
       toast.success('Unavailability schedule removed — equipment is available again');
@@ -511,7 +509,7 @@ const PitoEquipmentAvailabilityPage: React.FC = () => {
                       onMonthChange={setAddCalMonth}
                       selectedStart={null}
                       selectedEnd={null}
-                      onSelectDate={() => {}}
+                      onSelectDate={() => { }}
                       unavailableDatesForEquipment={unavailDates}
                     />
                   </div>

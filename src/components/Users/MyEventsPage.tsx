@@ -6820,6 +6820,28 @@ const MyEventsPage: React.FC = () => {
 
                                                 </Button>
 
+                                                <Button
+
+                                                  variant="outline"
+
+                                                  size="sm"
+
+                                                  onClick={() => handleDeleteRequirement(req, selectedEventDepartments._id, dept)}
+
+                                                  disabled={req.status?.toLowerCase() === 'confirmed'}
+
+                                                  className="h-7 px-2 gap-1 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 text-[10px] md:text-xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+
+                                                  title={req.status?.toLowerCase() === 'confirmed' ? "Cannot delete confirmed requirements" : "Delete Requirement"}
+
+                                                >
+
+                                                  <Trash2 className="w-3 h-3 md:w-3.5 md:h-3.5" />
+
+                                                  <span className="hidden sm:inline">Delete</span>
+
+                                                </Button>
+
                                                 {getRequirementStatusIcon(req.status)}
 
                                                 <Badge className={`text-[10px] md:text-xs ${statusBadge.className}`}>
