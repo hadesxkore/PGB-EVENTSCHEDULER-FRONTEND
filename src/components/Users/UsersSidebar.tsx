@@ -1924,7 +1924,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
       <div className={`
 
-        flex flex-col h-screen bg-white border-r border-gray-200 shadow-sm transition-all duration-300
+        flex flex-col h-screen bg-white border-r border-gray-100 transition-all duration-300
 
         ${isCollapsed ? 'lg:w-16' : 'lg:w-64'
 
@@ -1944,7 +1944,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         {/* Header */}
 
-        <div className="flex items-center gap-3 p-4 border-b border-gray-100 relative">
+        <div className="flex items-center gap-3 px-4 py-5 relative">
 
           <img
 
@@ -1962,7 +1962,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
             <h2 className="text-sm font-semibold text-gray-900 truncate">Event Scheduler</h2>
 
-            <p className="text-xs text-blue-600 truncate">Provincial Government</p>
+            <p className="text-xs text-gray-400 truncate">Provincial Government</p>
 
           </div>
 
@@ -1994,7 +1994,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         {/* Navigation */}
 
-        <nav className="flex-1 p-2 space-y-3 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-3 overflow-y-auto [scrollbar-width:thin] [scrollbar-color:#e5e7eb_transparent]">
 
           {navigationGroups.map((group, groupIndex) => (
 
@@ -2004,9 +2004,9 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
               {!isCollapsed && (
 
-                <div className="px-3 py-1">
+                <div className="px-3 pt-2 pb-1">
 
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
 
                     {group.label}
 
@@ -2072,11 +2072,11 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                           }}
 
-                          className={`flex-1 h-10 transition-all duration-200 ${isActive
+                          className={`flex-1 h-10 rounded-lg text-sm transition-colors duration-150 ${isActive
 
-                              ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-600'
+                              ? 'bg-gray-100 text-gray-900 font-medium'
 
-                              : 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
 
                             } ${isCollapsed
 
@@ -2090,7 +2090,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                         >
 
-                          <Icon className="h-5 w-5 flex-shrink-0" />
+                          <Icon className="h-[18px] w-[18px] flex-shrink-0" />
 
                           <span className={`flex-1 text-left truncate transition-opacity duration-200 ${isCollapsed ? 'lg:opacity-0 lg:w-0 lg:overflow-hidden' : 'opacity-100'
 
@@ -2112,11 +2112,11 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                             onClick={() => setRequestEventOpen(!requestEventOpen)}
 
-                            className={`h-10 w-8 p-0 rounded-l-none ${isActive
+                            className={`h-10 w-8 p-0 rounded-lg rounded-l-none ${isActive
 
-                                ? 'text-blue-700 hover:bg-blue-200'
+                                ? 'text-gray-900 hover:bg-gray-200'
 
-                                : 'text-gray-700 hover:bg-blue-50'
+                                : 'text-gray-500 hover:bg-gray-50'
 
                               }`}
 
@@ -2136,7 +2136,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isMyCalendar && totalEventCount > 0 && !isCollapsed && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {totalEventCount > 99 ? '99+' : totalEventCount}
 
@@ -2150,7 +2150,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isMessages && totalUnreadMessages > 0 && !isCollapsed && !unreadLoading && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {totalUnreadMessages > 99 ? '99+' : totalUnreadMessages}
 
@@ -2164,7 +2164,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isManageLocation && locationEventCount > 0 && !isCollapsed && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {locationEventCount > 99 ? '99+' : locationEventCount}
 
@@ -2178,7 +2178,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isTaggedDepartments && taggedDepartmentsCount > 0 && !isCollapsed && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {taggedDepartmentsCount > 99 ? '99+' : taggedDepartmentsCount}
 
@@ -2192,7 +2192,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isAllEvents && allEventsCount > 0 && !isCollapsed && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {allEventsCount > 99 ? '99+' : allEventsCount}
 
@@ -2206,7 +2206,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isMyEvents && myEventsBadgeCount > 0 && !isCollapsed && !myEventsBadgeViewed && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {myEventsBadgeCount > 99 ? '99+' : myEventsBadgeCount}
 
@@ -2220,7 +2220,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isEventReports && eventReportsBadgeCount > 0 && !isCollapsed && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {eventReportsBadgeCount > 99 ? '99+' : eventReportsBadgeCount}
 
@@ -2234,7 +2234,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                       {isBacRequests && bacRequestsPendingCount > 0 && !isCollapsed && (
 
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center rounded-full">
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none bg-red-500 text-white text-[10px] font-semibold tabular-nums px-1.5 min-w-[20px] h-[18px] flex items-center justify-center rounded-full">
 
                           {bacRequestsPendingCount > 99 ? '99+' : bacRequestsPendingCount}
 
@@ -2276,11 +2276,11 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
                               }}
 
-                              className={`w-full h-9 transition-all duration-200 ${isSubActive
+                              className={`w-full h-9 rounded-lg transition-colors duration-150 ${isSubActive
 
-                                  ? 'bg-blue-50 text-blue-700'
+                                  ? 'bg-gray-100 text-gray-900 font-medium'
 
-                                  : 'text-gray-600 hover:bg-blue-50 hover:text-blue-700'
+                                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
 
                                 } justify-start gap-2 px-3 text-sm`}
 
@@ -2312,7 +2312,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
               {groupIndex < navigationGroups.length - 1 && (
 
-                <Separator className="my-3" />
+                <Separator className="my-2 bg-gray-100" />
 
               )}
 
@@ -2326,13 +2326,13 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
         {/* Footer */}
 
-        <div className="border-t border-gray-100 p-4 space-y-3">
+        <div className="border-t border-gray-100 p-3 space-y-2">
 
           <div className="flex items-center gap-3">
 
-            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 bg-gray-900 rounded-full flex items-center justify-center flex-shrink-0">
 
-              <span className="text-sm font-bold text-white">
+              <span className="text-sm font-semibold text-white">
 
                 {currentUser.department?.charAt(0)?.toUpperCase() || 'D'}
 
@@ -2368,7 +2368,7 @@ const UsersSidebar: React.FC<UsersSidebarProps> = ({ user }) => {
 
             }}
 
-            className={`w-full h-9 transition-all duration-200 text-red-600 hover:bg-red-50 hover:text-red-700 ${isCollapsed
+            className={`w-full h-9 transition-all duration-200 text-gray-500 rounded-lg hover:bg-red-50 hover:text-red-600 ${isCollapsed
 
                 ? 'lg:justify-center lg:px-2'
 

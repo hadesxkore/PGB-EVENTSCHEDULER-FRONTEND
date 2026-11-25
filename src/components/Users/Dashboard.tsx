@@ -404,7 +404,7 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-  <div className="space-y-4 md:space-y-6 relative">
+  <div className="w-full md:px-4 lg:px-8 md:py-2 space-y-6 md:space-y-8 relative">
     <NotificationModal
       open={showAllNotifications}
       notifications={notifications}
@@ -414,10 +414,10 @@ const Dashboard: React.FC = () => {
       onMarkRead={handleMarkAsRead}
     />
     {/* Notification Button - Fixed Top Right */}
-    <div className="absolute top-0 right-0 z-10">
+    <div className="absolute top-0 right-0 md:right-4 lg:right-8 z-10">
       <DropdownMenu open={notificationOpen} onOpenChange={setNotificationOpen}>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" className="relative shadow-sm">
+          <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full bg-white border border-gray-100 text-gray-600 hover:bg-gray-50">
             <Bell className="h-5 w-5" />
             {getUnreadCount() > 0 && (
               <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center">
@@ -672,293 +672,224 @@ const Dashboard: React.FC = () => {
 
     {/* Header */}
     <div className="pr-14">
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h1>
-      <p className="text-sm md:text-base text-gray-600 mt-1 md:mt-2">Welcome to the Event Scheduler Dashboard</p>
+      <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">Dashboard</h1>
+      <p className="text-sm text-gray-500 mt-1">Your events and requirements at a glance</p>
     </div>
-      
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-2 md:p-3 bg-blue-100 rounded-lg">
-                <Calendar className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
-              </div>
-              <div>
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Total Events</h3>
-                <p className="text-2xl md:text-3xl font-bold text-blue-600 mt-1">
-                  {loading ? '...' : totalUserEvents}
-                </p>
-                <p className="text-sm text-gray-500">Your events</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center gap-3 md:gap-4">
-              <div className="p-2 md:p-3 bg-green-100 rounded-lg">
-                <CalendarDays className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
-              </div>
-              <div>
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Upcoming Events</h3>
-                <p className="text-2xl md:text-3xl font-bold text-green-600 mt-1">
-                  {loading ? '...' : upcomingEvents.length}
-                </p>
-                <p className="text-sm text-gray-500">Next 30 days</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4 md:p-6">
-            <div className="flex items-center gap-3 md:gap-4">
-              <div className="p-2 md:p-3 bg-purple-100 rounded-lg">
-                <Building2 className="h-5 w-5 md:h-6 md:w-6 text-purple-600" />
-              </div>
-              <div>
-                <h3 className="text-base md:text-lg font-semibold text-gray-900">Department Events</h3>
-                <p className="text-2xl md:text-3xl font-bold text-purple-600 mt-1">
-                  {loading ? '...' : totalSystemEvents}
-                </p>
-                <p className="text-sm text-gray-500">All system events</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      {/* Upcoming Events Section */}
-      <Card>
-        <CardHeader className="p-4 md:p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <CardTitle className="text-lg md:text-xl">Upcoming Events</CardTitle>
-            <Button variant="outline" size="sm" className="gap-2 text-xs md:text-sm">
-              View All
-              <ArrowRight className="h-3 w-3 md:h-4 md:w-4" />
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6">
-          <div className="space-y-3 md:space-y-4">
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading upcoming events...</p>
-              </div>
-            ) : upcomingEvents.length === 0 ? (
-              <div className="text-center py-8">
-                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No Upcoming Events</h3>
-                <p className="text-gray-500">You don't have any upcoming events in the next 30 days.</p>
-              </div>
-            ) : (
-              upcomingEvents.map((event) => (
-                <div key={event._id} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 md:gap-4 p-3 md:p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                  <div className="flex-shrink-0">
-                    <div className="w-10 h-10 md:w-12 md:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Calendar className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 min-w-0 w-full sm:w-auto">
-                    <h3 className="text-sm md:text-base font-semibold text-gray-900 truncate">{event.eventTitle}</h3>
-                    <p className="text-xs md:text-sm text-gray-600 truncate">
-                      {event.requestorDepartment || 'Unknown Department'}
-                    </p>
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-xs md:text-sm text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3 md:h-4 md:w-4" />
-                        <span className="truncate">{new Date(event.startDate).toLocaleDateString()} at {formatTime(event.startTime)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3 md:h-4 md:w-4" />
-                        {event.locations && event.locations.length > 0 ? (
-                          <span className="truncate">{event.locations.join(', ')}</span>
-                        ) : (
-                          <span className="truncate">{event.location || ''}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex-shrink-0">
-                    <Badge 
-                      className={
-                        event.status === 'approved' || event.status === 'confirmed' 
-                          ? 'bg-green-100 text-green-800 border-green-200' 
-                          : event.status === 'submitted' || event.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800 border-yellow-200'
-                          : event.status === 'declined' || event.status === 'rejected'
-                          ? 'bg-red-100 text-red-800 border-red-200'
-                          : 'bg-gray-100 text-gray-800 border-gray-200'
-                      }
-                      variant="outline"
-                    >
-                      {event.status === 'approved' ? 'Approved' : 
-                       event.status === 'confirmed' ? 'Confirmed' :
-                       event.status === 'submitted' ? 'Pending' : 
-                       event.status === 'pending' ? 'Pending' :
-                       event.status === 'declined' ? 'Declined' :
-                       event.status === 'rejected' ? 'Rejected' :
-                       event.status}
-                    </Badge>
-                  </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+        {[
+          { label: 'Your events', value: totalUserEvents, hint: 'Total requested by you', icon: Calendar },
+          { label: 'Upcoming', value: upcomingEvents.length, hint: 'Within the next 30 days', icon: CalendarDays },
+          { label: 'Department events', value: totalSystemEvents, hint: 'All events in the system', icon: Building2 },
+        ].map((s) => {
+          const StatIcon = s.icon;
+          return (
+            <div key={s.label} className="rounded-2xl border border-gray-100 bg-white p-5">
+              <div className="flex items-start justify-between">
+                <p className="text-sm text-gray-500">{s.label}</p>
+                <div className="h-8 w-8 rounded-lg bg-gray-50 flex items-center justify-center">
+                  <StatIcon className="h-4 w-4 text-gray-500" />
                 </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+              <p className="mt-3 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums">
+                {loading ? '–' : s.value}
+              </p>
+              <p className="mt-1 text-xs text-gray-400">{s.hint}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-start">
+
+      {/* Upcoming Events Section */}
+      <section className="xl:col-span-2 rounded-2xl border border-gray-100 bg-white p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-semibold text-gray-900">Upcoming events</h2>
+          <Button variant="ghost" size="sm" className="gap-1.5 text-xs text-gray-500 hover:text-gray-900 -mr-2">
+            View all
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        <div className="space-y-2">
+          {loading ? (
+            <div className="space-y-2">
+              {[0, 1, 2].map((i) => (
+                <div key={i} className="h-[72px] rounded-xl bg-gray-50 animate-pulse" />
+              ))}
+            </div>
+          ) : upcomingEvents.length === 0 ? (
+            <div className="text-center py-10">
+              <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100">
+                <Calendar className="h-5 w-5 text-gray-400" />
+              </div>
+              <h3 className="text-sm font-medium text-gray-900">No upcoming events</h3>
+              <p className="text-xs text-gray-500 mt-1">Nothing scheduled in the next 30 days.</p>
+            </div>
+          ) : (
+            upcomingEvents.map((event) => {
+              const d = new Date(event.startDate);
+              const st = event.status;
+              const pill =
+                st === 'approved' || st === 'confirmed' ? 'bg-emerald-50 text-emerald-700'
+                : st === 'submitted' || st === 'pending' ? 'bg-amber-50 text-amber-700'
+                : st === 'declined' || st === 'rejected' ? 'bg-red-50 text-red-700'
+                : 'bg-gray-100 text-gray-600';
+              const label =
+                st === 'approved' ? 'Approved' : st === 'confirmed' ? 'Confirmed'
+                : st === 'submitted' || st === 'pending' ? 'Pending'
+                : st === 'declined' ? 'Declined' : st === 'rejected' ? 'Rejected' : st;
+              return (
+                <div key={event._id} className="flex items-center gap-3 rounded-xl p-3 hover:bg-gray-50 transition-colors">
+                  <div className="shrink-0 w-12 rounded-lg bg-gray-50 py-1.5 text-center">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                      {d.toLocaleDateString('en-US', { month: 'short' })}
+                    </div>
+                    <div className="text-lg font-semibold leading-tight text-gray-900">
+                      {d.toLocaleDateString('en-US', { day: '2-digit' })}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium text-gray-900 truncate">{event.eventTitle}</h3>
+                    <div className="mt-0.5 flex items-center gap-x-3 gap-y-0.5 flex-wrap text-xs text-gray-500">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatTime(event.startTime)}
+                      </span>
+                      <span className="flex items-center gap-1 min-w-0">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate max-w-[160px]">
+                          {event.locations && event.locations.length > 0 ? event.locations.join(', ') : event.location || ''}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${pill}`}>{label}</span>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </section>
 
       {/* Requirements Status Overview Section */}
-      <Card>
-        <CardHeader className="p-4 md:p-6">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-4">
-            <CardTitle className="text-lg md:text-xl">Requirements Status Overview</CardTitle>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full lg:w-auto">
-              {/* Event Filter Dropdown */}
-              <Select value={selectedEventFilter} onValueChange={setSelectedEventFilter}>
-                <SelectTrigger className="w-full sm:w-64">
-                  <SelectValue placeholder="Select an event" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">
-                    All Events ({requirementsOverview.length})
-                  </SelectItem>
-                  {getUniqueEvents().map((event) => (
-                  <SelectItem key={event.id} value={event.id}>
-                    {event.title} ({getFilteredRequirements(event.id).length})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <Badge variant="outline" className="gap-1 text-xs md:text-sm">
-              <AlertCircle className="h-3 w-3" />
-              {getFilteredRequirements(selectedEventFilter).length} Showing
-            </Badge>
+      <section className="xl:col-span-3 rounded-2xl border border-gray-100 bg-white p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2">
+            <h2 className="text-base font-semibold text-gray-900">Requirements</h2>
+            <span className="text-xs text-gray-400 tabular-nums">{getFilteredRequirements(selectedEventFilter).length}</span>
+          </div>
+          <Select value={selectedEventFilter} onValueChange={setSelectedEventFilter}>
+            <SelectTrigger className="w-full sm:w-64 h-9 text-sm bg-gray-50 border-transparent rounded-xl">
+              <SelectValue placeholder="Select an event" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                All Events ({requirementsOverview.length})
+              </SelectItem>
+              {getUniqueEvents().map((event) => (
+                <SelectItem key={event.id} value={event.id}>
+                  {event.title} ({getFilteredRequirements(event.id).length})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {loading ? (
+          <div className="space-y-2">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="h-16 rounded-xl bg-gray-50 animate-pulse" />
+            ))}
+          </div>
+        ) : getFilteredRequirements(selectedEventFilter).length === 0 ? (
+          <div className="text-center py-10">
+            <div className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-gray-100">
+              <AlertCircle className="h-5 w-5 text-gray-400" />
             </div>
+            <h3 className="text-sm font-medium text-gray-900">
+              {selectedEventFilter === 'all' ? 'No requirements' : 'No requirements for this event'}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              {selectedEventFilter === 'all'
+                ? "You don't have any requirements in your events."
+                : "This event doesn't have any requirements."}
+            </p>
           </div>
-        </CardHeader>
-        <CardContent className="p-4 md:p-6">
-          <div className="space-y-3 md:space-y-4">
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-sm text-gray-500 mt-2">Loading requirements...</p>
-              </div>
-            ) : getFilteredRequirements(selectedEventFilter).length === 0 ? (
-              <div className="text-center py-8">
-                <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {selectedEventFilter === 'all' ? 'No Requirements' : 'No Requirements for Selected Event'}
-                </h3>
-                <p className="text-gray-500">
-                  {selectedEventFilter === 'all' 
-                    ? "You don't have any requirements in your events." 
-                    : "This event doesn't have any requirements."}
-                </p>
-              </div>
-            ) : (
-              <div className="max-h-[600px] overflow-y-auto pr-1 md:pr-2 space-y-3 md:space-y-4">
-                {getFilteredRequirements(selectedEventFilter).map((req) => (
-                  <div key={`${req.eventId}-${req.id}`} className="bg-white border border-gray-200 rounded-lg md:rounded-xl p-3 md:p-5 hover:shadow-md transition-all duration-200">
-                    <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-                      <div className="flex items-start gap-3 md:gap-4 flex-1 w-full sm:w-auto">
-                        {/* Status Indicator */}
-                        <div className="flex-shrink-0 mt-0.5 md:mt-1">
-                          <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                            req.status === 'confirmed' ? 'bg-green-100' :
-                            req.status === 'pending' ? 'bg-yellow-100' :
-                            req.status === 'declined' ? 'bg-red-100' :
-                            req.status === 'partially_fulfill' ? 'bg-blue-100' :
-                            req.status === 'in_preparation' ? 'bg-purple-100' :
-                            'bg-gray-100'
-                          }`}>
-                            <div className={`w-2 h-2 rounded-full ${
-                              req.status === 'confirmed' ? 'bg-green-500' :
-                              req.status === 'pending' ? 'bg-yellow-500' :
-                              req.status === 'declined' ? 'bg-red-500' :
-                              req.status === 'partially_fulfill' ? 'bg-blue-500' :
-                              req.status === 'in_preparation' ? 'bg-purple-500' :
-                              'bg-gray-500'
-                            }`}></div>
-                          </div>
-                        </div>
-                        
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                            <h3 className="font-semibold text-gray-900 text-sm md:text-base lg:text-lg">{req.name}</h3>
-                            <Badge variant="outline" className="text-xs font-medium px-2 py-1 w-fit">
-                              {req.department}
-                            </Badge>
-                          </div>
-                          
-                          <p className="text-xs md:text-sm text-gray-600 mb-2 truncate">{req.eventTitle}</p>
-                          
-                          {/* Show quantity for physical requirements, notes for service requirements */}
-                          {req.quantity ? (
-                            (() => {
-                              let displayTotal = req.totalQuantity;
-                              if (req.availabilityNotes && req.availabilityNotes.startsWith('PAVILION_DEFAULT:')) {
-                                const parts = req.availabilityNotes.split(':');
-                                const parsed = parseInt(parts[1], 10);
-                                if (!isNaN(parsed)) {
-                                  displayTotal = parsed;
-                                }
-                              }
-                              return (
-                                <p className="text-xs md:text-sm text-gray-500 mb-2">
-                                  Requested: <span className="font-medium">{req.quantity}</span> of <span className="font-medium">{displayTotal || 'N/A'}</span> available (location)
-                                </p>
-                              );
-                            })()
-                          ) : req.notes && (
-                            <div className="bg-blue-50 rounded-lg p-2 md:p-3 mb-2">
-                              <p className="text-xs text-blue-600 font-medium mb-1">Requestor's Notes:</p>
-                              <p className="text-xs md:text-sm text-gray-700 break-words">{req.notes}</p>
-                            </div>
-                          )}
-                          
-                          {req.departmentNotes && (
-                            <div className="bg-gray-50 rounded-lg p-2 md:p-3 mt-2 md:mt-3">
-                              <p className="text-xs text-gray-600 font-medium mb-1">Department Notes:</p>
-                              <p className="text-xs md:text-sm text-gray-700 break-words">{req.departmentNotes}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Status Badge */}
-                      <div className="flex-shrink-0 sm:ml-4 w-full sm:w-auto">
-                        <div className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs md:text-sm font-medium text-center ${
-                          req.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                          req.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          req.status === 'declined' ? 'bg-red-100 text-red-800' :
-                          req.status === 'partially_fulfill' ? 'bg-blue-100 text-blue-800' :
-                          req.status === 'in_preparation' ? 'bg-purple-100 text-purple-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {req.status === 'confirmed' ? 'Confirmed' :
-                           req.status === 'pending' ? 'Pending' :
-                           req.status === 'declined' ? 'Declined' :
-                           req.status === 'partially_fulfill' ? 'Partial' :
-                           req.status === 'in_preparation' ? 'Preparing' :
-                           req.status}
-                        </div>
-                      </div>
+        ) : (
+          <div className="max-h-[560px] overflow-y-auto -mx-2 px-2 divide-y divide-gray-100 [scrollbar-width:thin]">
+            {getFilteredRequirements(selectedEventFilter).map((req) => {
+              const dot =
+                req.status === 'confirmed' ? 'bg-emerald-500'
+                : req.status === 'pending' ? 'bg-amber-500'
+                : req.status === 'declined' ? 'bg-red-500'
+                : req.status === 'partially_fulfill' ? 'bg-blue-500'
+                : req.status === 'in_preparation' ? 'bg-violet-500'
+                : 'bg-gray-400';
+              const pill =
+                req.status === 'confirmed' ? 'bg-emerald-50 text-emerald-700'
+                : req.status === 'pending' ? 'bg-amber-50 text-amber-700'
+                : req.status === 'declined' ? 'bg-red-50 text-red-700'
+                : req.status === 'partially_fulfill' ? 'bg-blue-50 text-blue-700'
+                : req.status === 'in_preparation' ? 'bg-violet-50 text-violet-700'
+                : 'bg-gray-100 text-gray-600';
+              const label =
+                req.status === 'confirmed' ? 'Confirmed'
+                : req.status === 'pending' ? 'Pending'
+                : req.status === 'declined' ? 'Declined'
+                : req.status === 'partially_fulfill' ? 'Partial'
+                : req.status === 'in_preparation' ? 'Preparing'
+                : req.status;
+              return (
+                <div key={`${req.eventId}-${req.id}`} className="py-4 flex items-start gap-3">
+                  <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dot}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm font-medium text-gray-900">{req.name}</h3>
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] text-gray-600">{req.department}</span>
                     </div>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate">{req.eventTitle}</p>
+
+                    {/* Show quantity for physical requirements, notes for service requirements */}
+                    {req.quantity ? (
+                      (() => {
+                        let displayTotal = req.totalQuantity;
+                        if (req.availabilityNotes && req.availabilityNotes.startsWith('PAVILION_DEFAULT:')) {
+                          const parts = req.availabilityNotes.split(':');
+                          const parsed = parseInt(parts[1], 10);
+                          if (!isNaN(parsed)) {
+                            displayTotal = parsed;
+                          }
+                        }
+                        return (
+                          <p className="text-xs text-gray-500 mt-1.5">
+                            Requested <span className="font-medium text-gray-700">{req.quantity}</span> of <span className="font-medium text-gray-700">{displayTotal || 'N/A'}</span> available
+                          </p>
+                        );
+                      })()
+                    ) : req.notes && (
+                      <p className="text-xs text-gray-600 mt-1.5 break-words">
+                        <span className="text-gray-400">Your notes: </span>{req.notes}
+                      </p>
+                    )}
+
+                    {req.departmentNotes && (
+                      <div className="mt-2 rounded-lg bg-gray-50 px-3 py-2">
+                        <p className="text-[11px] font-medium text-gray-500 mb-0.5">Department notes</p>
+                        <p className="text-xs text-gray-700 break-words">{req.departmentNotes}</p>
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-medium ${pill}`}>{label}</span>
+                </div>
+              );
+            })}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </section>
+
+      </div>
       
       {/* Separate Toaster for popup notifications only */}
       <Toaster 

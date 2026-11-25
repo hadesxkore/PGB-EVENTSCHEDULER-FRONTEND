@@ -25,6 +25,8 @@ import {
   Activity,
 
   Shield,
+  Menu as MenuIcon,
+  X as XIcon,
 
   ChevronLeft,
 
@@ -83,6 +85,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user }) => {
   };
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const [calendarEventCount, setCalendarEventCount] = useState(0);
 
@@ -431,258 +434,125 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ user }) => {
 
 
   return (
+    <>
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-[60] p-2 bg-white rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50"
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <XIcon className="h-5 w-5 text-gray-700" /> : <MenuIcon className="h-5 w-5 text-gray-700" />}
+      </button>
 
-    <div className={`flex flex-col h-screen bg-white border-r border-gray-200 shadow-sm transition-all duration-300 ${
+      {/* Mobile overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/40 z-40"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-      isCollapsed ? 'w-16' : 'w-64'
-
-    }`}>
-
-      {/* Logo Section */}
-
-      <div className="flex items-center gap-3 p-6 border-b border-gray-100 relative">
-
-        {!isCollapsed && (
-
-          <>
-
-            <img 
-
-              src="/images/bataanlogo.png" 
-
-              alt="Bataan Logo" 
-
-              className="w-10 h-10 object-contain"
-
-            />
-
-            <div>
-
-              <h2 className="text-lg font-semibold text-gray-900">Event Scheduler</h2>
-
-              <p className="text-xs text-red-600 font-medium">Admin Panel</p>
-
-            </div>
-
-          </>
-
-        )}
-
-        {isCollapsed && (
-
-          <img 
-
-            src="/images/bataanlogo.png" 
-
-            alt="Bataan Logo" 
-
-            className="w-8 h-8 object-contain mx-auto"
-
+      <div
+        className={`
+          flex flex-col h-dvh bg-white border-r border-gray-100 transition-all duration-300
+          w-64 ${isCollapsed ? 'lg:w-16' : 'lg:w-64'}
+          fixed top-0 left-0 z-50 lg:relative lg:translate-x-0
+          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+      >
+        {/* Logo Section */}
+        <div className="flex items-center gap-3 px-4 py-5 relative shrink-0">
+          <img
+            src="/images/bataanlogo.png"
+            alt="Bataan Logo"
+            className="w-9 h-9 object-contain shrink-0"
           />
-
-        )}
-
-        
-
-        {/* Toggle Button */}
-
-        <Button
-
-          variant="ghost"
-
-          size="icon-sm"
-
-          onClick={() => setIsCollapsed(!isCollapsed)}
-
-          className="absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-gray-200 hover:bg-gray-50 rounded-full shadow-sm"
-
-        >
-
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-
-        </Button>
-
-      </div>
-
-
-
-      {/* Navigation Items */}
-
-      <nav className="flex-1 px-4 py-6 space-y-2">
-
-        {navigationItems.map((item, index) => {
-
-          const Icon = item.icon;
-
-          const isActive = location.pathname === item.href;
-
-          const isCalendar = item.href === '/admin/calendar';
-
-          const isAllEvents = item.href === '/admin/all-events';
-
-          const showCalendarBadge = isCalendar && calendarEventCount > 0;
-
-          const showAllEventsBadge = isAllEvents && submittedEventsCount > 0;
-
-          
-
-          return (
-
-            <Button
-
-              key={index}
-
-              variant="ghost"
-
-              onClick={() => handleNavigation(item.href)}
-
-              className={`w-full h-11 transition-colors relative ${
-
-                isActive 
-
-                  ? 'bg-red-100 text-red-700 border-r-2 border-red-600'
-
-                  : 'text-gray-700 hover:bg-red-50 hover:text-red-700'
-
-              } ${
-
-                isCollapsed 
-
-                  ? 'justify-center px-0' 
-
-                  : 'justify-start gap-3 px-3'
-
-              }`}
-
-              title={isCollapsed ? item.label : undefined}
-
-            >
-
-              <Icon className="w-5 h-5" />
-
-              {!isCollapsed && <span className="font-medium">{item.label}</span>}
-
-              
-
-              {/* Badge for Calendar */}
-
-              {showCalendarBadge && !isCollapsed && (
-
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-semibold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
-
-                  {calendarEventCount > 99 ? '99+' : calendarEventCount}
-
-                </div>
-
-              )}
-
-
-
-              {/* Badge for All Events (submitted events count) */}
-
-              {showAllEventsBadge && !isCollapsed && (
-
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 bg-red-500 text-white text-xs font-semibold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
-
-                  {submittedEventsCount > 99 ? '99+' : submittedEventsCount}
-
-                </div>
-
-              )}
-
-            </Button>
-
-          );
-
-        })}
-
-      </nav>
-
-
-
-      {/* Profile Section */}
-
-      <div className="border-t border-gray-100 p-4 space-y-3">
-
-        <div className={`flex items-center rounded-lg bg-gray-50 ${
-
-          isCollapsed ? 'justify-center p-2' : 'gap-3 p-3'
-
-        }`}>
-
-          <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
-
-            <Shield className="w-5 h-5 text-white" />
-
+          <div className={`min-w-0 ${isCollapsed ? 'lg:hidden' : ''}`}>
+            <h2 className="text-sm font-semibold text-gray-900 truncate">Event Scheduler</h2>
+            <p className="text-xs text-gray-400 truncate">Admin Panel</p>
           </div>
-
-          {!isCollapsed && (
-
-            <div className="flex-1 min-w-0">
-
-              <p className="text-sm font-medium text-gray-900 truncate">
-
-                {currentUser.name}
-
-              </p>
-
-              <p className="text-xs text-gray-600 truncate">
-
-                {currentUser.department}
-
-              </p>
-
-              <p className="text-xs text-gray-500 truncate">
-
-                {currentUser.email}
-
-              </p>
-
-            </div>
-
-          )}
-
+          {/* Toggle Button (desktop only) */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 bg-white border border-gray-200 hover:bg-gray-50 rounded-full shadow-sm"
+          >
+            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </Button>
         </div>
 
-        
+        {/* Navigation Items (scrolls when the screen is short) */}
+        <nav className="flex-1 min-h-0 overflow-y-auto px-3 py-2 space-y-1 [scrollbar-width:thin] [scrollbar-color:#e5e7eb_transparent]">
+          {navigationItems.map((item, index) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.href;
+            const isCalendar = item.href === '/admin/calendar';
+            const isAllEvents = item.href === '/admin/all-events';
+            const showCalendarBadge = isCalendar && calendarEventCount > 0;
+            const showAllEventsBadge = isAllEvents && submittedEventsCount > 0;
+            const badgeCount = showCalendarBadge ? calendarEventCount : showAllEventsBadge ? submittedEventsCount : 0;
 
-        {/* Logout Button */}
+            return (
+              <Button
+                key={index}
+                variant="ghost"
+                onClick={() => {
+                  handleNavigation(item.href);
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`w-full h-10 rounded-lg text-sm transition-colors relative ${
+                  isActive
+                    ? 'bg-gray-100 text-gray-900 font-medium'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                } ${isCollapsed ? 'lg:justify-center lg:px-0 justify-start gap-3 px-3' : 'justify-start gap-3 px-3'}`}
+                title={isCollapsed ? item.label : undefined}
+              >
+                <Icon className="w-[18px] h-[18px] shrink-0" />
+                <span className={`truncate ${isCollapsed ? 'lg:hidden' : ''}`}>{item.label}</span>
 
-        <Button
+                {/* Badge (Calendar / All Events) */}
+                {badgeCount > 0 && !isCollapsed && (
+                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 bg-red-500 text-white text-[10px] font-semibold tabular-nums rounded-full min-w-[20px] h-[18px] flex items-center justify-center px-1.5">
+                    {badgeCount > 99 ? '99+' : badgeCount}
+                  </div>
+                )}
+              </Button>
+            );
+          })}
+        </nav>
 
-          variant="ghost"
+        {/* Profile + Logout (always visible) */}
+        <div className="shrink-0 border-t border-gray-100 p-3 space-y-1">
+          <div className={`flex items-center rounded-lg ${isCollapsed ? 'lg:justify-center p-2' : 'gap-3 p-2'}`}>
+            <div className="w-9 h-9 bg-gray-900 rounded-full flex items-center justify-center shrink-0">
+              <Shield className="w-4 h-4 text-white" />
+            </div>
+            <div className={`flex-1 min-w-0 ${isCollapsed ? 'lg:hidden' : ''}`}>
+              <p className="text-sm font-medium text-gray-900 truncate">{currentUser.name}</p>
+              <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
+            </div>
+          </div>
 
-          onClick={handleLogout}
-
-          className={`w-full h-10 text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors ${
-
-            isCollapsed 
-
-              ? 'justify-center px-0' 
-
-              : 'justify-start gap-3 px-3'
-
-          }`}
-
-          title={isCollapsed ? 'Logout' : undefined}
-
-        >
-
-          <LogOut className="w-5 h-5" />
-
-          {!isCollapsed && <span className="font-medium">Logout</span>}
-
-        </Button>
-
+          <Button
+            variant="ghost"
+            onClick={() => {
+              handleLogout();
+              setIsMobileMenuOpen(false);
+            }}
+            className={`w-full h-9 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors ${
+              isCollapsed ? 'lg:justify-center lg:px-0 justify-start gap-3 px-3' : 'justify-start gap-3 px-3'
+            }`}
+            title={isCollapsed ? 'Logout' : undefined}
+          >
+            <LogOut className="w-[18px] h-[18px] shrink-0" />
+            <span className={isCollapsed ? 'lg:hidden' : ''}>Logout</span>
+          </Button>
+        </div>
       </div>
-
-    </div>
-
+    </>
   );
-
 };
 
-
-
 export default AdminSidebar;
-

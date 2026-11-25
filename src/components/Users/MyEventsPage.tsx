@@ -5295,7 +5295,7 @@ const MyEventsPage: React.FC = () => {
 
   return (
 
-    <div className="px-4 py-6 md:px-8 md:py-8 max-w-5xl mx-auto space-y-6">
+    <div className="w-full px-4 py-6 md:px-8 lg:px-10 md:py-8 space-y-6">
 
       {/* Header */}
       <motion.div
@@ -5393,9 +5393,9 @@ const MyEventsPage: React.FC = () => {
       </div>
 
       {/* Events List */}
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3 items-start">
         {loading ? (
-          <div className="space-y-3">
+          <div className="space-y-3 col-span-full">
             {Array.from({ length: 5 }).map((_, idx) => (
               <div key={idx} className="flex gap-4 rounded-2xl border border-gray-100 p-4">
                 <Skeleton className="h-14 w-14 rounded-xl" />
@@ -5408,7 +5408,7 @@ const MyEventsPage: React.FC = () => {
             ))}
           </div>
         ) : filteredAndSortedEvents.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-200 py-16 px-6 text-center">
+          <div className="col-span-full rounded-2xl border border-dashed border-gray-200 py-16 px-6 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
               <FileText className="w-5 h-5 text-gray-400" />
             </div>
