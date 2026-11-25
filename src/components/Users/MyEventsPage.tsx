@@ -164,7 +164,9 @@ import {
   Sparkles,
   Wand2,
   Info,
-  Ban
+  Ban,
+  Phone,
+  Mail
 
 } from 'lucide-react';
 
@@ -5293,366 +5295,294 @@ const MyEventsPage: React.FC = () => {
 
   return (
 
-    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-4 md:space-y-6">
+    <div className="px-4 py-6 md:px-8 md:py-8 max-w-5xl mx-auto space-y-6">
 
-      {/* Status Tabs Filter */}
-
-      <Tabs
-        value={activeTab}
-        onValueChange={(val) => {
-          setActiveTab(val);
-          const filterMap: { [key: string]: string } = {
-            All: 'all',
-            Submitted: 'submitted',
-            Approved: 'approved',
-            Incoming: 'incoming',
-            Ongoing: 'ongoing',
-            Completed: 'completed',
-            Rejected: 'rejected',
-            Draft: 'draft',
-            Cancelled: 'cancelled',
-          };
-          setStatusFilter(filterMap[val] || 'all');
-        }}
-        className="w-full"
-      >
-        <TabsList className="w-full bg-blue-50/50 p-1 rounded-lg flex-wrap h-auto">
-          {[
-            { key: 'All', label: 'All' },
-            { key: 'Submitted', label: 'Submitted' },
-            { key: 'Approved', label: 'Approved' },
-            { key: 'Incoming', label: 'Incoming' },
-            { key: 'Ongoing', label: 'Ongoing' },
-            { key: 'Completed', label: 'Completed' },
-            { key: 'Rejected', label: 'Rejected' },
-            { key: 'Draft', label: 'Draft' },
-            { key: 'Cancelled', label: 'Cancelled' },
-          ].map((tab) => (
-            <TabsTrigger
-              key={tab.key}
-              value={tab.key}
-              className={`data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-sm text-xs md:text-sm px-3 py-1.5`}
-            >
-              {tab.label} ({eventsByStatus[tab.key]})
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      {/* Compact Header Row */}
-
+      {/* Header */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
+        initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        className="flex items-center justify-between gap-4"
       >
         <div>
-          <h1 className="text-xl md:text-2xl font-semibold">My Events</h1>
-          <p className="text-xs md:text-sm text-muted-foreground">
-            Manage and track your event requests
+          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight text-gray-900">My Events</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {eventsByStatus['All']} event{eventsByStatus['All'] !== 1 ? 's' : ''} · track and manage your requests
           </p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2">
           <Button
             onClick={fetchMyEvents}
-            variant="outline"
-            size="sm"
-            className="gap-2 flex-1 sm:flex-none"
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-gray-500 hover:text-gray-900"
+            title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
-            <span className="text-xs">Refresh</span>
           </Button>
           <Button
             onClick={() => window.location.href = '/users/request-event'}
-            size="sm"
-            className="gap-2 flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white"
+            className="gap-2 h-9 rounded-full px-4 bg-gray-900 hover:bg-gray-800 text-white"
           >
             <Plus className="w-4 h-4" />
-            <span className="text-xs">New Event</span>
+            <span className="text-sm">New Event</span>
           </Button>
         </div>
       </motion.div>
 
-      {/* Search + Sort Bar */}
-
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+      {/* Search + Sort */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Search events..."
+            placeholder="Search by title, location or requestor"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="pl-10 h-10 text-sm bg-gray-50 border-transparent rounded-xl focus-visible:bg-white focus-visible:ring-1 focus-visible:ring-gray-300"
           />
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-full sm:w-[170px] text-sm border border-gray-300 rounded-lg">
-              <ArrowUpDown className="w-4 h-4 text-gray-500 mr-2" />
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="newest">Smart (Incoming ? Ongoing ? Completed)</SelectItem>
-              <SelectItem value="date-asc">Event Date (Earliest First)</SelectItem>
-              <SelectItem value="date-desc">Event Date (Latest First)</SelectItem>
-              <SelectItem value="oldest">Created Date (Oldest First)</SelectItem>
-              <SelectItem value="title">Title (A-Z)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={sortBy} onValueChange={setSortBy}>
+          <SelectTrigger className="w-full sm:w-[200px] h-10 text-sm bg-gray-50 border-transparent rounded-xl">
+            <ArrowUpDown className="w-4 h-4 text-gray-400 mr-2" />
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">Smart (Incoming ? Ongoing ? Completed)</SelectItem>
+            <SelectItem value="date-asc">Event Date (Earliest First)</SelectItem>
+            <SelectItem value="date-desc">Event Date (Latest First)</SelectItem>
+            <SelectItem value="oldest">Created Date (Oldest First)</SelectItem>
+            <SelectItem value="title">Title (A-Z)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Status filter chips */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {[
+          { key: 'All', filter: 'all' },
+          { key: 'Submitted', filter: 'submitted' },
+          { key: 'Approved', filter: 'approved' },
+          { key: 'Incoming', filter: 'incoming' },
+          { key: 'Ongoing', filter: 'ongoing' },
+          { key: 'Completed', filter: 'completed' },
+          { key: 'Rejected', filter: 'rejected' },
+          { key: 'Draft', filter: 'draft' },
+          { key: 'Cancelled', filter: 'cancelled' },
+        ].map((tab) => {
+          const active = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => {
+                setActiveTab(tab.key);
+                setStatusFilter(tab.filter);
+              }}
+              className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm transition-colors ${
+                active
+                  ? 'bg-gray-900 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {tab.key}
+              <span className={`text-xs tabular-nums ${active ? 'text-gray-300' : 'text-gray-400'}`}>
+                {eventsByStatus[tab.key]}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Events List */}
-
-      <div className="relative space-y-3 max-h-[65vh] overflow-y-auto pr-1">
+      <div className="space-y-3">
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, idx) => (
-              <Card key={idx} className="border">
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Skeleton className="h-5 w-20" />
-                      <Skeleton className="h-4 w-32" />
-                    </div>
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-3 w-1/2" />
-                    <Skeleton className="h-3 w-full" />
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={idx} className="flex gap-4 rounded-2xl border border-gray-100 p-4">
+                <Skeleton className="h-14 w-14 rounded-xl" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-3 w-1/2" />
+                  <Skeleton className="h-3 w-1/3" />
+                </div>
+              </div>
             ))}
           </div>
         ) : filteredAndSortedEvents.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                {searchTerm || statusFilter !== 'all' ? 'No events found' : 'No events yet'}
-              </h3>
-              <p className="text-gray-500 mb-4">
-                {searchTerm || statusFilter !== 'all'
-                  ? 'Try adjusting your search or filter criteria.'
-                  : 'You haven\'t created any event requests yet.'}
-              </p>
-              {!searchTerm && statusFilter === 'all' && (
-                <Button onClick={() => window.location.href = '/users/request-event'}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create Your First Event
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+          <div className="rounded-2xl border border-dashed border-gray-200 py-16 px-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+              <FileText className="w-5 h-5 text-gray-400" />
+            </div>
+            <h3 className="text-base font-medium text-gray-900">
+              {searchTerm || statusFilter !== 'all' ? 'No events found' : 'No events yet'}
+            </h3>
+            <p className="text-sm text-gray-500 mt-1 mb-5">
+              {searchTerm || statusFilter !== 'all'
+                ? 'Try adjusting your search or filter.'
+                : "You haven't created any event requests yet."}
+            </p>
+            {!searchTerm && statusFilter === 'all' && (
+              <Button
+                onClick={() => window.location.href = '/users/request-event'}
+                className="rounded-full bg-gray-900 hover:bg-gray-800 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create your first event
+              </Button>
+            )}
+          </div>
         ) : (
-          <div className="space-y-3">
+          <>
             {visibleEvents.map((event) => {
               const statusInfo = getStatusInfo(event.dynamicStatus);
-              const isExpanded = expandedCards.has(event._id);
+              const startD = new Date(event.startDate);
+              const multiDay = event.startDate !== event.endDate;
+              const updates = getTaggedUpdatesCount(event);
 
-              const borderColorMap: { [key: string]: string } = {
-                rejected: 'border-red-500',
-                cancelled: 'border-gray-400',
-                approved: 'border-emerald-500',
-                incoming: 'border-emerald-500',
-                submitted: 'border-amber-500',
-                draft: 'border-blue-400',
-                completed: 'border-blue-600',
-                ongoing: 'border-green-500',
-              };
-              const borderClass = borderColorMap[event.dynamicStatus] || 'border-gray-200';
+              const statusBadge = (
+                <Badge
+                  variant={statusInfo.variant}
+                  className={`gap-1 text-xs font-medium ${(event.status === 'rejected' || event.status === 'cancelled' || event.dynamicStatus === 'rejected' || event.dynamicStatus === 'cancelled') ? 'cursor-help' : ''} ${statusInfo.className || ''}`}
+                >
+                  {statusInfo.icon}
+                  {statusInfo.label}
+                </Badge>
+              );
 
               return (
-                <Collapsible
+                <div
                   key={event._id}
-                  open={isExpanded}
-                  onOpenChange={() => toggleCard(event._id)}
+                  className="group rounded-2xl border border-gray-100 bg-white p-4 md:p-5 transition-all hover:border-gray-200 hover:shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
                 >
-                  <Card className={`border-l-4 ${borderClass} hover:shadow-sm transition-shadow`}>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <CollapsibleTrigger asChild>
-                          <div className="flex-1 space-y-2 cursor-pointer">
-                            {/* Status Badges Row */}
-                            <div className="flex items-center gap-2 flex-wrap">
-                              {event.status === 'rejected' || event.dynamicStatus === 'rejected' ? (
-                                <HoverCard openDelay={150}>
-                                  <HoverCardTrigger asChild>
-                                    <div 
-                                      className="inline-block"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <Badge
-                                        variant={statusInfo.variant}
-                                        className={`gap-1 text-xs cursor-help ${statusInfo.className || ''}`}
-                                      >
-                                        {statusInfo.icon}
-                                        {statusInfo.label}
-                                      </Badge>
-                                    </div>
-                                  </HoverCardTrigger>
-                                  <HoverCardContent 
-                                    className="w-80 bg-white text-gray-900 border shadow-lg z-50" 
-                                    side="top" 
-                                    align="start" 
-                                    sideOffset={5}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <div className="space-y-2 text-left">
-                                      <h4 className="text-xs font-semibold text-red-600 flex items-center gap-1.5">
-                                        <XCircle className="w-3.5 h-3.5 text-red-600" />
-                                        Rejection Details
-                                      </h4>
-                                      <div className="bg-red-50/70 rounded-md p-2.5 border border-red-100">
-                                        <p className="text-xs text-red-950 font-medium">
-                                          <span className="text-red-700 font-semibold">Reason: </span>
-                                          {event.reason || (event.bacApprovalStatus === 'rejected' && event.bacNotes ? event.bacNotes : 'No reason provided.')}
-                                        </p>
-                                      </div>
-                                      {event.bacApprovalStatus === 'rejected' && event.bacNotes && event.reason && (
-                                        <p className="text-[11px] text-amber-800">
-                                          <span className="font-semibold">BAC Department Note: </span>
-                                          {event.bacNotes}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </HoverCardContent>
-                                </HoverCard>
-                              ) : (event.status === 'cancelled' || event.dynamicStatus === 'cancelled') ? (
-                                <HoverCard openDelay={150}>
-                                  <HoverCardTrigger asChild>
-                                    <div 
-                                      className="inline-block"
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <Badge
-                                        variant={statusInfo.variant}
-                                        className={`gap-1 text-xs cursor-help ${statusInfo.className || ''}`}
-                                      >
-                                        {statusInfo.icon}
-                                        {statusInfo.label}
-                                      </Badge>
-                                    </div>
-                                  </HoverCardTrigger>
-                                  <HoverCardContent 
-                                    className="w-80 bg-white text-gray-900 border shadow-lg z-50" 
-                                    side="top" 
-                                    align="start" 
-                                    sideOffset={5}
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <div className="space-y-2 text-left">
-                                      <h4 className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                                        <XCircle className="w-3.5 h-3.5 text-slate-600" />
-                                        Cancellation Details
-                                      </h4>
-                                      <div className="bg-slate-50 rounded-md p-2.5 border border-slate-200">
-                                        <p className="text-xs text-slate-800">
-                                          <span className="font-semibold text-slate-700">Reason: </span>
-                                          {event.reason || 'No reason provided.'}
-                                        </p>
-                                      </div>
-                                      {event.cancelledAt && (
-                                        <p className="text-[11px] text-slate-500">
-                                          <span className="font-medium">Date: </span>
-                                          {new Date(event.cancelledAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </HoverCardContent>
-                                </HoverCard>
-                              ) : (
-                                <Badge
-                                  variant={statusInfo.variant}
-                                  className={`gap-1 text-xs ${statusInfo.className || ''}`}
+                  <div className="flex items-start gap-4">
+                    {/* Date tile */}
+                    <div className="shrink-0 w-14 rounded-xl bg-gray-50 py-2 text-center">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                        {format(startD, 'MMM')}
+                      </div>
+                      <div className="text-xl font-semibold leading-tight text-gray-900">
+                        {format(startD, 'dd')}
+                      </div>
+                    </div>
+
+                    {/* Main */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            {event.status === 'rejected' || event.dynamicStatus === 'rejected' ? (
+                              <HoverCard openDelay={150}>
+                                <HoverCardTrigger asChild>
+                                  <div className="inline-block" onClick={(e) => e.stopPropagation()}>
+                                    {statusBadge}
+                                  </div>
+                                </HoverCardTrigger>
+                                <HoverCardContent
+                                  className="w-80 bg-white text-gray-900 border shadow-lg z-50"
+                                  side="top"
+                                  align="start"
+                                  sideOffset={5}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  {statusInfo.icon}
-                                  {statusInfo.label}
-                                </Badge>
-                              )}
-                              {event.bacApprovalStatus === 'rejected' && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Badge variant="outline" className="gap-1 text-xs bg-amber-100 text-amber-800 border-amber-300 cursor-help">
-                                      <Info className="w-3 h-3" />
-                                      BAC
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-xs bg-white text-gray-900 border shadow-lg">
-                                    <p className="text-xs font-semibold text-amber-800">BAC Department Rejection:</p>
-                                    <p className="text-xs text-gray-700 mt-1">{event.bacNotes || 'No notes provided'}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                              {event.dynamicStatus !== event.status && event.status !== 'rejected' && (
-                                <Badge
-                                  variant="outline"
-                                  className="gap-1 text-xs bg-green-100 text-green-800 border-green-200"
+                                  <div className="space-y-2 text-left">
+                                    <h4 className="text-xs font-semibold text-red-600 flex items-center gap-1.5">
+                                      <XCircle className="w-3.5 h-3.5 text-red-600" />
+                                      Rejection Details
+                                    </h4>
+                                    <div className="bg-red-50/70 rounded-md p-2.5 border border-red-100">
+                                      <p className="text-xs text-red-950 font-medium">
+                                        <span className="text-red-700 font-semibold">Reason: </span>
+                                        {event.reason || (event.bacApprovalStatus === 'rejected' && event.bacNotes ? event.bacNotes : 'No reason provided.')}
+                                      </p>
+                                    </div>
+                                    {event.bacApprovalStatus === 'rejected' && event.bacNotes && event.reason && (
+                                      <p className="text-[11px] text-amber-800">
+                                        <span className="font-semibold">BAC Department Note: </span>
+                                        {event.bacNotes}
+                                      </p>
+                                    )}
+                                  </div>
+                                </HoverCardContent>
+                              </HoverCard>
+                            ) : (event.status === 'cancelled' || event.dynamicStatus === 'cancelled') ? (
+                              <HoverCard openDelay={150}>
+                                <HoverCardTrigger asChild>
+                                  <div className="inline-block" onClick={(e) => e.stopPropagation()}>
+                                    {statusBadge}
+                                  </div>
+                                </HoverCardTrigger>
+                                <HoverCardContent
+                                  className="w-80 bg-white text-gray-900 border shadow-lg z-50"
+                                  side="top"
+                                  align="start"
+                                  sideOffset={5}
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  <CheckCircle className="w-3 h-3" />
-                                  {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                                </Badge>
-                              )}
-                              {event.status === 'rejected' && (
-                                <Button
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditEvent(event);
-                                  }}
-                                  className="gap-1 h-6 px-2 text-[11px] bg-violet-600 hover:bg-violet-700 text-white"
-                                >
-                                  <Sparkles className="w-3 h-3" />
-                                  Suggest Venue
-                                </Button>
-                              )}
-                            </div>
-                            {/* Title */}
-                            <h3 className="text-base font-semibold text-gray-900 truncate">
-                              {event.eventTitle}
-                            </h3>
-                            {/* Requestor */}
-                            <p className="text-xs text-gray-500">
-                              Requested by {event.requestor}
-                            </p>
-                            {/* Compact Detail Row */}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <CalendarIcon className="w-3 h-3" />
-                                {format(new Date(event.startDate), 'MMM dd, yyyy')}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {formatTime(event.startTime)} - {formatTime(event.endTime)}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3 h-3" />
-                                {event.locations && event.locations.length > 1 ? event.locations.join(' + ') : event.location}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Users className="w-3 h-3" />
-                                {event.participants}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Building2 className="w-3 h-3" />
-                                {event.taggedDepartments.length} dept{event.taggedDepartments.length !== 1 ? 's' : ''}
-                              </span>
-                            </div>
-                            {/* Toggle indicator */}
-                            <div className="flex items-center gap-1 text-xs text-blue-600 pt-1">
-                              {isExpanded ? (
-                                <><ChevronUp className="w-3.5 h-3.5" /> Less</>
-                              ) : (
-                                <><ChevronDown className="w-3.5 h-3.5" /> More details</>
-                              )}
-                            </div>
+                                  <div className="space-y-2 text-left">
+                                    <h4 className="text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                                      <XCircle className="w-3.5 h-3.5 text-slate-600" />
+                                      Cancellation Details
+                                    </h4>
+                                    <div className="bg-slate-50 rounded-md p-2.5 border border-slate-200">
+                                      <p className="text-xs text-slate-800">
+                                        <span className="font-semibold text-slate-700">Reason: </span>
+                                        {event.reason || 'No reason provided.'}
+                                      </p>
+                                    </div>
+                                    {event.cancelledAt && (
+                                      <p className="text-[11px] text-slate-500">
+                                        <span className="font-medium">Date: </span>
+                                        {new Date(event.cancelledAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                      </p>
+                                    )}
+                                  </div>
+                                </HoverCardContent>
+                              </HoverCard>
+                            ) : (
+                              statusBadge
+                            )}
+                            {event.bacApprovalStatus === 'rejected' && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="gap-1 text-xs bg-amber-100 text-amber-800 border-amber-300 cursor-help">
+                                    <Info className="w-3 h-3" />
+                                    BAC
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-xs bg-white text-gray-900 border shadow-lg">
+                                  <p className="text-xs font-semibold text-amber-800">BAC Department Rejection:</p>
+                                  <p className="text-xs text-gray-700 mt-1">{event.bacNotes || 'No notes provided'}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                            {event.dynamicStatus !== event.status && event.status !== 'rejected' && (
+                              <Badge variant="outline" className="gap-1 text-xs bg-green-100 text-green-800 border-green-200">
+                                <CheckCircle className="w-3 h-3" />
+                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                              </Badge>
+                            )}
+                            {event.status === 'rejected' && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleEditEvent(event)}
+                                className="gap-1 h-6 px-2.5 rounded-full text-[11px] bg-violet-600 hover:bg-violet-700 text-white"
+                              >
+                                <Sparkles className="w-3 h-3" />
+                                Suggest Venue
+                              </Button>
+                            )}
                           </div>
-                        </CollapsibleTrigger>
+                          <h3
+                            onClick={() => handleViewEvent(event)}
+                            className="text-base md:text-lg font-semibold text-gray-900 truncate cursor-pointer hover:underline decoration-gray-300 underline-offset-4"
+                          >
+                            {event.eventTitle}
+                          </h3>
+                        </div>
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="gap-1 h-7 text-xs shrink-0">
-                              <MoreHorizontal className="w-3.5 h-3.5" />
-                              Actions
+                            <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 text-gray-400 hover:text-gray-900">
+                              <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="text-xs">
@@ -5688,92 +5618,82 @@ const MyEventsPage: React.FC = () => {
                         </DropdownMenu>
                       </div>
 
-                      <CollapsibleContent className="space-y-3 pt-3">
-                        {/* Expanded Details */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
-                          <div className="flex items-center gap-2">
-                            <CalendarIcon className="w-4 h-4 text-gray-400" />
-                            <span>
-                              {format(new Date(event.startDate), 'MMM dd, yyyy')}
-                              {event.startDate !== event.endDate && ` - ${format(new Date(event.endDate), 'MMM dd, yyyy')}`}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-gray-400" />
-                            <span>{formatTime(event.startTime)} - {formatTime(event.endTime)}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4 text-gray-400" />
-                            {event.locations && event.locations.length > 1 ? (
-                              <span>{event.locations.join(', ')}</span>
-                            ) : (
-                              <span>{event.location}</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4 text-gray-400" />
-                            <span>{event.participants} participants</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Building2 className="w-4 h-4 text-gray-400" />
-                            <span>{event.taggedDepartments.length} department{event.taggedDepartments.length !== 1 ? 's' : ''}</span>
-                          </div>
-                        </div>
+                      {/* Meta */}
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-gray-500">
+                        <span className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-gray-400" />
+                          {multiDay && `${format(startD, 'MMM dd')} – ${format(new Date(event.endDate), 'MMM dd')} · `}
+                          {formatTime(event.startTime)} – {formatTime(event.endTime)}
+                        </span>
+                        <span className="flex items-center gap-1.5 min-w-0">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                          <span className="truncate max-w-[260px]">
+                            {event.locations && event.locations.length > 1 ? event.locations.join(' + ') : event.location}
+                          </span>
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 text-gray-400" />
+                          {event.participants}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                          {event.taggedDepartments.length} dept{event.taggedDepartments.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
 
-                        {/* Expanded Action Buttons */}
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleViewEvent(event)}
-                            className="gap-1 h-8 text-xs"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                            View Details / Requirements
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShowDepartments(event)}
-                            className="gap-1 h-8 text-xs relative"
-                          >
-                            <Building2 className="w-3.5 h-3.5" />
-                            Tagged / Requirements
-                            {getTaggedUpdatesCount(event) > 0 && !viewedTaggedRequirementsEvents.has(event._id) && (
-                              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] min-w-[16px] h-[16px] px-1">
-                                {getTaggedUpdatesCount(event) > 99 ? '99+' : getTaggedUpdatesCount(event)}
-                              </span>
-                            )}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShowFiles(event)}
-                            className="gap-1 h-8 text-xs"
-                          >
-                            <Paperclip className="w-3.5 h-3.5" />
-                            Files
-                          </Button>
-                        </div>
-                      </CollapsibleContent>
-                    </CardContent>
-                  </Card>
-                </Collapsible>
+                      {/* Quick actions */}
+                      <div className="mt-4 flex flex-wrap items-center gap-1 -ml-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewEvent(event)}
+                          className="gap-1.5 h-8 px-2.5 text-xs text-gray-600 hover:text-gray-900"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          Details
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleShowDepartments(event)}
+                          className="gap-1.5 h-8 px-2.5 text-xs text-gray-600 hover:text-gray-900"
+                        >
+                          <Building2 className="w-3.5 h-3.5" />
+                          Requirements
+                          {updates > 0 && !viewedTaggedRequirementsEvents.has(event._id) && (
+                            <span className="inline-flex items-center justify-center rounded-full bg-red-500 text-white text-[9px] min-w-[16px] h-[16px] px-1">
+                              {updates > 99 ? '99+' : updates}
+                            </span>
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleShowFiles(event)}
+                          className="gap-1.5 h-8 px-2.5 text-xs text-gray-600 hover:text-gray-900"
+                        >
+                          <Paperclip className="w-3.5 h-3.5" />
+                          Files
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               );
             })}
 
             {filteredAndSortedEvents.length > visibleCount && (
               <div className="flex justify-center pt-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => setVisibleCount((c) => c + 20)}
-                  className="w-full sm:w-auto"
+                  className="rounded-full text-gray-600"
                 >
-                  Load more
+                  Show more
                 </Button>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 
@@ -5783,117 +5703,43 @@ const MyEventsPage: React.FC = () => {
 
       <Dialog open={showEventModal} onOpenChange={setShowEventModal}>
 
-        <DialogContent className="w-[calc(100vw-2rem)] sm:w-[95vw] md:w-[90vw] lg:w-[85vw] xl:w-[80vw] max-w-7xl max-h-[90vh] overflow-y-auto p-4 md:p-6 lg:p-8">
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-2xl max-h-[92vh] p-0 gap-0 overflow-hidden rounded-2xl flex flex-col [&>button]:top-4 [&>button]:right-4">
 
-          <DialogHeader>
+          {selectedEvent && (() => {
+            const se: any = selectedEvent;
+            const si = getStatusInfo(se.status);
+            const isRejected = se.status === 'rejected' || se.dynamicStatus === 'rejected';
+            const isCancelled = se.status === 'cancelled' || se.dynamicStatus === 'cancelled';
+            const fmtStamp = (v: any) => new Date(v).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const locs: string[] = se.locations && se.locations.length > 1 ? se.locations : [se.location];
+            const statusBadge = (
+              <Badge variant={si.variant} className={`gap-1 text-xs font-medium ${(isRejected || isCancelled) ? 'cursor-help' : ''} ${si.className || ''}`}>
+                {si.icon}
+                {si.label}
+              </Badge>
+            );
 
-            <DialogTitle className="text-lg md:text-xl">Event Details</DialogTitle>
-
-            <DialogDescription className="text-xs md:text-sm">
-
-              Complete information about your event request
-
-            </DialogDescription>
-
-          </DialogHeader>
-
-
-
-          {selectedEvent && (
-
-            <div className="space-y-4 md:space-y-6 py-3 md:py-4">
-
-              {/* Basic Info */}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-
-                <div className="space-y-3 md:space-y-4">
-
-                  <div>
-
-                    <label className="text-xs md:text-sm font-medium text-gray-700">Event Title</label>
-
-                    <p className="text-xs md:text-sm text-gray-900 mt-1 truncate" title={selectedEvent.eventTitle}>{selectedEvent.eventTitle}</p>
-
-                  </div>
-
-                  <div>
-
-                    <label className="text-xs md:text-sm font-medium text-gray-700">Requestor</label>
-
-                    <p className="text-xs md:text-sm text-gray-900 mt-1">{selectedEvent.requestor}</p>
-
-                  </div>
-
-                  <div>
-
-                    <label className="text-xs md:text-sm font-medium text-gray-700">
-
-                      Location{selectedEvent.locations && selectedEvent.locations.length > 1 ? 's' : ''}
-
-                    </label>
-
-                    {selectedEvent.locations && selectedEvent.locations.length > 1 ? (
-
-                      <div className="flex flex-wrap gap-1 mt-1">
-
-                        {selectedEvent.locations.map((loc: any, idx: number) => (
-
-                          <Badge key={idx} variant="secondary" className="text-xs">
-
-                            {loc}
-
-                          </Badge>
-
-                        ))}
-
-                      </div>
-
-                    ) : (
-
-                      <p className="text-xs md:text-sm text-gray-900 mt-1">{selectedEvent.location}</p>
-
-                    )}
-
-                  </div>
-
-                  {selectedEvent.roomType && (
-
-                    <div>
-
-                      <label className="text-xs md:text-sm font-medium text-gray-700">Room Type</label>
-
-                      <p className="text-xs md:text-sm text-gray-900 mt-1">{selectedEvent.roomType}</p>
-
-                    </div>
-
-                  )}
-
+            const Fact = ({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-50 text-gray-500">
+                  {icon}
                 </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium uppercase tracking-wider text-gray-400">{label}</p>
+                  <div className="text-sm text-gray-900 break-words">{children}</div>
+                </div>
+              </div>
+            );
 
-
-
-                <div className="space-y-4">
-
-                  <div>
-
-                    <label className="text-sm font-medium text-gray-700">Status</label>
-
-                    <div className="mt-1">
-
-                      {selectedEvent.status === 'cancelled' ? (
+            return (
+              <>
+                {/* Header */}
+                <div className="px-5 sm:px-7 pt-6 pb-5 border-b border-gray-100 pr-12">
+                  <DialogHeader className="space-y-2 text-left">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {isCancelled ? (
                         <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="inline-block cursor-help">
-                              <Badge 
-                                variant={getStatusInfo(selectedEvent.status).variant}
-                                className={`gap-1 ${getStatusInfo(selectedEvent.status).className || ''}`}
-                              >
-                                {getStatusInfo(selectedEvent.status).icon}
-                                {getStatusInfo(selectedEvent.status).label}
-                              </Badge>
-                            </div>
-                          </PopoverTrigger>
+                          <PopoverTrigger asChild><div className="inline-block">{statusBadge}</div></PopoverTrigger>
                           <PopoverContent className="w-80 bg-white text-gray-900 border shadow-lg">
                             <div className="space-y-2">
                               <h4 className="font-semibold text-sm text-slate-800 flex items-center gap-1.5">
@@ -5902,29 +5748,17 @@ const MyEventsPage: React.FC = () => {
                               </h4>
                               <p className="text-sm text-gray-700">
                                 <span className="font-medium">Reason: </span>
-                                {selectedEvent.reason || 'No reason provided.'}
+                                {se.reason || 'No reason provided.'}
                               </p>
-                              {selectedEvent.cancelledAt && (
-                                <p className="text-xs text-gray-500">
-                                  Date: {new Date(selectedEvent.cancelledAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                </p>
+                              {se.cancelledAt && (
+                                <p className="text-xs text-gray-500">Date: {fmtStamp(se.cancelledAt)}</p>
                               )}
                             </div>
                           </PopoverContent>
                         </Popover>
-                      ) : selectedEvent.status === 'rejected' ? (
+                      ) : isRejected ? (
                         <Popover>
-                          <PopoverTrigger asChild>
-                            <div className="inline-block cursor-help">
-                              <Badge 
-                                variant={getStatusInfo(selectedEvent.status).variant}
-                                className={`gap-1 ${getStatusInfo(selectedEvent.status).className || ''}`}
-                              >
-                                {getStatusInfo(selectedEvent.status).icon}
-                                {getStatusInfo(selectedEvent.status).label}
-                              </Badge>
-                            </div>
-                          </PopoverTrigger>
+                          <PopoverTrigger asChild><div className="inline-block">{statusBadge}</div></PopoverTrigger>
                           <PopoverContent className="w-80 bg-white text-gray-900 border shadow-lg">
                             <div className="space-y-2">
                               <h4 className="font-semibold text-sm text-red-600 flex items-center gap-1.5">
@@ -5933,308 +5767,149 @@ const MyEventsPage: React.FC = () => {
                               </h4>
                               <p className="text-sm text-gray-700">
                                 <span className="font-medium text-gray-900">Reason: </span>
-                                {selectedEvent.reason || (selectedEvent.bacApprovalStatus === 'rejected' && selectedEvent.bacNotes ? selectedEvent.bacNotes : 'No reason provided.')}
+                                {se.reason || (se.bacApprovalStatus === 'rejected' && se.bacNotes ? se.bacNotes : 'No reason provided.')}
                               </p>
-                              {selectedEvent.bacApprovalStatus === 'rejected' && selectedEvent.bacNotes && selectedEvent.reason && (
+                              {se.bacApprovalStatus === 'rejected' && se.bacNotes && se.reason && (
                                 <p className="text-xs text-amber-800 pt-1">
                                   <span className="font-semibold">BAC Department Note: </span>
-                                  {selectedEvent.bacNotes}
+                                  {se.bacNotes}
                                 </p>
                               )}
                             </div>
                           </PopoverContent>
                         </Popover>
-                      ) : (
-                        <Badge 
-                          variant={getStatusInfo(selectedEvent.status).variant}
-
-                          className={`gap-1 ${getStatusInfo(selectedEvent.status).className || ''}`}
-
-                        >
-
-                          {getStatusInfo(selectedEvent.status).icon}
-
-                          {getStatusInfo(selectedEvent.status).label}
-
-                        </Badge>
-
-                      )}
-
+                      ) : statusBadge}
                     </div>
-
-                  </div>
-
-                  <div>
-
-                    <label className="text-sm font-medium text-gray-700">Participants</label>
-
-                    <p className="text-sm text-gray-900 mt-1">
-
-                      {selectedEvent.participants} total
-
-                      {selectedEvent.vip && selectedEvent.vip > 0 && ` (${selectedEvent.vip} VIP)`}
-
-                      {selectedEvent.vvip && selectedEvent.vvip > 0 && ` (${selectedEvent.vvip} VVIP)`}
-
-                    </p>
-
-                  </div>
-
-                  <div>
-
-                    <label className="text-sm font-medium text-gray-700">Contact Number</label>
-
-                    <p className="text-sm text-gray-900 mt-1">{selectedEvent.contactNumber}</p>
-
-                  </div>
-
+                    <DialogTitle className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900 leading-snug break-words">
+                      {se.eventTitle}
+                    </DialogTitle>
+                    <DialogDescription className="text-sm text-gray-500">
+                      Requested by {se.requestor}
+                    </DialogDescription>
+                  </DialogHeader>
                 </div>
 
+                {/* Body */}
+                <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-6 space-y-7">
 
-
-                <div className="space-y-4">
-
-                  <div>
-
-                    <label className="text-sm font-medium text-gray-700">Contact Email</label>
-
-                    <p className="text-sm text-gray-900 mt-1">{selectedEvent.contactEmail}</p>
-
-                  </div>
-
-                  <div>
-
-                    <label className="text-sm font-medium text-gray-700">Created</label>
-
-                    <p className="text-sm text-gray-900 mt-1">{format(new Date(selectedEvent.createdAt), 'PPp')}</p>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* Rejection Details Callout for Rejected Event */}
-              {(selectedEvent.status === 'rejected' || (selectedEvent as any).dynamicStatus === 'rejected') && (
-                <div className="rounded-xl border border-red-200 bg-red-50/80 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-red-800 font-semibold text-sm">
-                    <XCircle className="w-4 h-4 text-red-600" />
-                    <span>Reason for Rejection</span>
-                  </div>
-                  <div className="bg-white/90 rounded-lg p-3 border border-red-100 shadow-xs">
-                    <p className="text-sm text-red-950 leading-relaxed font-medium">
-                      {selectedEvent.reason || (selectedEvent.bacApprovalStatus === 'rejected' && selectedEvent.bacNotes ? selectedEvent.bacNotes : 'No specific reason provided.')}
-                    </p>
-                  </div>
-                  {selectedEvent.bacApprovalStatus === 'rejected' && selectedEvent.bacNotes && selectedEvent.reason && (
-                    <div className="text-xs text-amber-800 pt-1">
-                      <span className="font-semibold">BAC Department Note: </span>
-                      {selectedEvent.bacNotes}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Cancellation Details Callout for Cancelled Event */}
-              {(selectedEvent.status === 'cancelled' || (selectedEvent as any).dynamicStatus === 'cancelled') && (
-                <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-4 space-y-2">
-                  <div className="flex items-center gap-2 text-slate-800 font-semibold text-sm">
-                    <XCircle className="w-4 h-4 text-slate-600" />
-                    <span>Cancellation Details</span>
-                  </div>
-                  <div className="bg-white/90 rounded-lg p-3 border border-slate-200 shadow-xs">
-                    <p className="text-sm text-slate-800 leading-relaxed">
-                      <span className="font-semibold text-slate-700">Reason: </span>
-                      {selectedEvent.reason || 'No specific reason provided.'}
-                    </p>
-                  </div>
-                  {selectedEvent.cancelledAt && (
-                    <p className="text-xs text-slate-500">
-                      Cancelled on: {new Date(selectedEvent.cancelledAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <Separator />
-
-
-
-              {/* Description */}
-
-              {selectedEvent.description && (
-
-                <div>
-
-                  <h4 className="text-sm font-medium text-gray-700 mb-3">Description</h4>
-
-                  <div className={`bg-gray-50 rounded-lg p-4 border border-gray-200 ${selectedEvent.description.length > 800 ? 'max-h-48 overflow-y-auto scroll-smooth' : ''}`}>
-
-                    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
-
-                      {selectedEvent.description}
-
-                    </p>
-
-                  </div>
-
-                </div>
-
-              )}
-
-
-
-              <Separator />
-
-
-
-              {/* Schedule */}
-
-              <div>
-
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Schedule</h4>
-
-                <div className="space-y-4">
-
-                  {/* Primary Schedule - Day 1 */}
-
-                  <div>
-
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Day 1</p>
-
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-
-                      <div className="flex items-center justify-between">
-
-                        <div className="flex items-center gap-3">
-
-                          <CalendarIcon className="w-5 h-5 text-blue-600" />
-
-                          <div>
-
-                            <p className="text-xs font-medium text-gray-500">Date</p>
-
-                            <p className="text-sm font-semibold text-gray-900">
-
-                              {format(new Date(selectedEvent.startDate), 'EEEE, MMMM dd, yyyy')}
-
-                            </p>
-
-                          </div>
-
-                        </div>
-
-                        <div className="flex items-center gap-2">
-
-                          <Clock className="w-4 h-4 text-gray-600" />
-
-                          <p className="text-sm font-medium text-gray-900">
-
-                            {formatTime(selectedEvent.startTime)} - {formatTime(selectedEvent.endTime)}
-
-                          </p>
-
-                        </div>
-
+                  {/* Callouts */}
+                  {isRejected && (
+                    <div className="rounded-xl bg-red-50 p-4 space-y-2">
+                      <div className="flex items-center gap-2 text-red-800 font-medium text-sm">
+                        <XCircle className="w-4 h-4 text-red-600" />
+                        Reason for rejection
                       </div>
-
-                    </div>
-
-                  </div>
-
-
-
-                  {/* Additional Date/Time Slots */}
-
-                  {selectedEvent.dateTimeSlots && selectedEvent.dateTimeSlots.length > 0 && (
-
-                    <div className="pt-3 border-t">
-
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-
-                        Additional Date Slots ({selectedEvent.dateTimeSlots.length})
-
+                      <p className="text-sm text-red-950 leading-relaxed">
+                        {se.reason || (se.bacApprovalStatus === 'rejected' && se.bacNotes ? se.bacNotes : 'No specific reason provided.')}
                       </p>
-
-                      <div className="space-y-2">
-
-                        {selectedEvent.dateTimeSlots.map((slot: any, index: number) => (
-
-                          <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-
-                            <div className="flex items-center justify-between">
-
-                              <div className="flex items-center gap-3">
-
-                                <CalendarIcon className="w-5 h-5 text-blue-600" />
-
-                                <div>
-
-                                  <p className="text-xs font-medium text-blue-900">Day #{index + 2}</p>
-
-                                  <p className="text-sm text-blue-800">
-
-                                    {format(new Date(slot.startDate), 'EEEE, MMMM dd, yyyy')}
-
-                                  </p>
-
-                                </div>
-
-                              </div>
-
-                              <div className="flex items-center gap-2">
-
-                                <Clock className="w-4 h-4 text-blue-600" />
-
-                                <p className="text-sm font-medium text-blue-900">
-
-                                  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-
-                                </p>
-
-                              </div>
-
-                            </div>
-
-                          </div>
-
-                        ))}
-
-                      </div>
-
+                      {se.bacApprovalStatus === 'rejected' && se.bacNotes && se.reason && (
+                        <p className="text-xs text-amber-800">
+                          <span className="font-semibold">BAC Department Note: </span>
+                          {se.bacNotes}
+                        </p>
+                      )}
                     </div>
-
                   )}
 
-                </div>
+                  {isCancelled && (
+                    <div className="rounded-xl bg-slate-50 p-4 space-y-2">
+                      <div className="flex items-center gap-2 text-slate-800 font-medium text-sm">
+                        <XCircle className="w-4 h-4 text-slate-600" />
+                        Cancellation details
+                      </div>
+                      <p className="text-sm text-slate-800 leading-relaxed">
+                        <span className="font-medium text-slate-700">Reason: </span>
+                        {se.reason || 'No specific reason provided.'}
+                      </p>
+                      {se.cancelledAt && (
+                        <p className="text-xs text-slate-500">Cancelled on {fmtStamp(se.cancelledAt)}</p>
+                      )}
+                    </div>
+                  )}
 
-              </div>
-
-
-
-              <Separator />
-
-
-
-              {/* Timestamps - Bottom Right */}
-
-              <div className="flex justify-end">
-
-                {selectedEvent.submittedAt && (
-
-                  <div className="text-sm text-gray-600">
-
-                    <span className="font-medium">Submitted:</span> {format(new Date(selectedEvent.submittedAt), 'PPpp')}
-
+                  {/* Key facts */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                    <Fact icon={<MapPin className="w-4 h-4" />} label={`Location${locs.length > 1 ? 's' : ''}`}>
+                      {locs.length > 1 ? (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {locs.map((loc: any, idx: number) => (
+                            <Badge key={idx} variant="secondary" className="text-xs font-normal">{loc}</Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <span>{se.location}</span>
+                      )}
+                      {se.roomType && <span className="block text-xs text-gray-500">{se.roomType}</span>}
+                    </Fact>
+                    <Fact icon={<Users className="w-4 h-4" />} label="Participants">
+                      {se.participants} total
+                      {se.vip > 0 && <span className="text-gray-500"> · {se.vip} VIP</span>}
+                      {se.vvip > 0 && <span className="text-gray-500"> · {se.vvip} VVIP</span>}
+                    </Fact>
+                    {se.contactNumber && (
+                      <Fact icon={<Phone className="w-4 h-4" />} label="Contact number">{se.contactNumber}</Fact>
+                    )}
+                    {se.contactEmail && (
+                      <Fact icon={<Mail className="w-4 h-4" />} label="Contact email">{se.contactEmail}</Fact>
+                    )}
                   </div>
 
-                )}
+                  {/* Description */}
+                  {se.description && (
+                    <section>
+                      <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Description</h4>
+                      <p className={`text-sm text-gray-700 leading-relaxed whitespace-pre-wrap ${se.description.length > 800 ? 'max-h-48 overflow-y-auto pr-2' : ''}`}>
+                        {se.description}
+                      </p>
+                    </section>
+                  )}
 
-              </div>
+                  {/* Schedule */}
+                  <section>
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+                      Schedule{se.dateTimeSlots && se.dateTimeSlots.length > 0 ? ` · ${se.dateTimeSlots.length + 1} days` : ''}
+                    </h4>
+                    <div className="space-y-2">
+                      {[
+                        { startDate: se.startDate, startTime: se.startTime, endTime: se.endTime },
+                        ...(se.dateTimeSlots || []),
+                      ].map((slot: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-3 sm:gap-4 rounded-xl border border-gray-100 p-3"
+                        >
+                          <div className="shrink-0 w-12 rounded-lg bg-gray-50 py-1.5 text-center">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+                              {format(new Date(slot.startDate), 'MMM')}
+                            </div>
+                            <div className="text-lg font-semibold leading-tight text-gray-900">
+                              {format(new Date(slot.startDate), 'dd')}
+                            </div>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {format(new Date(slot.startDate), 'EEEE, MMMM dd, yyyy')}
+                            </p>
+                            <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                              <Clock className="w-3 h-3" />
+                              {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
+                            </p>
+                          </div>
+                          <span className="shrink-0 text-[11px] text-gray-400">Day {index + 1}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                </div>
 
-            </div>
-
-          )}
+                {/* Footer */}
+                <div className="px-5 sm:px-7 py-3 border-t border-gray-100 bg-gray-50/60 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 text-xs text-gray-500">
+                  {se.createdAt && <span>Created {format(new Date(se.createdAt), 'PPp')}</span>}
+                  {se.submittedAt && <span>Submitted {format(new Date(se.submittedAt), 'PPp')}</span>}
+                </div>
+              </>
+            );
+          })()}
 
         </DialogContent>
 
@@ -6426,32 +6101,19 @@ const MyEventsPage: React.FC = () => {
 
       <Dialog open={showDepartmentsModal} onOpenChange={setShowDepartmentsModal}>
 
-        <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-[95vw] md:max-w-[90vw] lg:max-w-6xl max-h-[90vh] overflow-hidden p-0">
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-4xl max-h-[92vh] overflow-hidden p-0 gap-0 rounded-2xl">
 
-          <div className="flex flex-col max-h-[90vh]">
+          <div className="flex flex-col max-h-[92vh]">
 
             {/* Modern Header */}
 
-            <div className="px-4 md:px-6 py-3 md:py-4 border-b bg-gradient-to-r from-blue-50 to-indigo-50 flex-shrink-0">
-
-              <DialogTitle className="text-lg md:text-xl lg:text-2xl font-bold text-gray-900 flex items-center gap-2 md:gap-3">
-
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-
-                  <Building2 className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
-
-                </div>
-
-                <span className="truncate">Tagged Departments & Requirements</span>
-
+            <div className="px-5 md:px-7 pt-6 pb-4 border-b border-gray-100 flex-shrink-0 pr-12">
+              <DialogTitle className="text-xl md:text-2xl font-semibold tracking-tight text-gray-900">
+                Requirements
               </DialogTitle>
-
-              <DialogDescription className="text-xs md:text-sm text-gray-600 mt-1 md:mt-2">
-
-                Real-time status and coordination details for all involved departments
-
+              <DialogDescription className="text-sm text-gray-500 mt-1 truncate">
+                {selectedEventDepartments?.eventTitle ? `${selectedEventDepartments.eventTitle} · ` : ''}Live status from each tagged department
               </DialogDescription>
-
             </div>
 
 
@@ -6462,148 +6124,44 @@ const MyEventsPage: React.FC = () => {
 
               {selectedEventDepartments && (
 
-                <div key={selectedEventDepartments._id} className="p-3 md:p-4 lg:p-6 space-y-4 md:space-y-6 lg:space-y-8">
+                <div key={selectedEventDepartments._id} className="px-5 md:px-7 py-5 space-y-6">
 
                   {/* Quick Status Overview */}
 
-                  <div className="bg-white rounded-xl border shadow-sm p-4 md:p-6">
-
-                    <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
-
-                      <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center">
-
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-
-                      </div>
-
-                      Requirements Overview
-
-                    </h3>
-
+                  <div>
                     {(() => {
-
                       const allRequirements = Object.values(selectedEventDepartments.departmentRequirements || {}).flat();
-
-                      const statusCounts = {
-
-                        confirmed: 0,
-
-                        pending: 0,
-
-                        declined: 0,
-
-                        partially_fulfill: 0,
-
-                        in_preparation: 0
-
-                      };
-
-
-
+                      const statusCounts = { confirmed: 0, pending: 0, declined: 0, partially_fulfill: 0, in_preparation: 0 };
                       allRequirements.forEach((req: any) => {
-
                         const status = req.status?.toLowerCase() || 'pending';
-
                         if (statusCounts.hasOwnProperty(status)) {
-
                           statusCounts[status as keyof typeof statusCounts]++;
-
                         }
-
                       });
-
-
-
+                      const total = statusCounts.confirmed + statusCounts.pending + statusCounts.declined + statusCounts.partially_fulfill + statusCounts.in_preparation;
+                      const chips = [
+                        { key: 'all', label: 'All', count: total, dot: 'bg-gray-400' },
+                        { key: 'confirmed', label: 'Confirmed', count: statusCounts.confirmed, dot: 'bg-emerald-500' },
+                        { key: 'pending', label: 'Pending', count: statusCounts.pending, dot: 'bg-amber-500' },
+                        { key: 'declined', label: 'Declined', count: statusCounts.declined, dot: 'bg-red-500' },
+                      ];
                       return (
-
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-4">
-
-                          <button
-
-                            onClick={() => setSelectedStatusFilter('all')}
-
-                            className={`text-center p-2 md:p-3 lg:p-4 rounded-lg border transition-all hover:shadow-md ${selectedStatusFilter === 'all'
-
-                                ? 'bg-gray-100 border-gray-400 ring-2 ring-gray-300'
-
-                                : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
-
-                              }`}
-
-                          >
-
-                            <div className="text-lg md:text-xl lg:text-2xl font-bold text-gray-600">{statusCounts.confirmed + statusCounts.pending + statusCounts.declined + statusCounts.partially_fulfill + statusCounts.in_preparation}</div>
-
-                            <div className="text-xs md:text-sm text-gray-700 font-medium">All</div>
-
-                          </button>
-
-                          <button
-
-                            onClick={() => setSelectedStatusFilter('confirmed')}
-
-                            className={`text-center p-4 rounded-lg border transition-all hover:shadow-md ${selectedStatusFilter === 'confirmed'
-
-                                ? 'bg-green-100 border-green-400 ring-2 ring-green-300'
-
-                                : 'bg-green-50 border-green-200 hover:bg-green-100'
-
-                              }`}
-
-                          >
-
-                            <div className="text-2xl font-bold text-green-600">{statusCounts.confirmed}</div>
-
-                            <div className="text-sm text-green-700 font-medium">Confirmed</div>
-
-                          </button>
-
-                          <button
-
-                            onClick={() => setSelectedStatusFilter('pending')}
-
-                            className={`text-center p-4 rounded-lg border transition-all hover:shadow-md ${selectedStatusFilter === 'pending'
-
-                                ? 'bg-yellow-100 border-yellow-400 ring-2 ring-yellow-300'
-
-                                : 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
-
-                              }`}
-
-                          >
-
-                            <div className="text-2xl font-bold text-yellow-600">{statusCounts.pending}</div>
-
-                            <div className="text-sm text-yellow-700 font-medium">Pending</div>
-
-                          </button>
-
-                          <button
-
-                            onClick={() => setSelectedStatusFilter('declined')}
-
-                            className={`text-center p-4 rounded-lg border transition-all hover:shadow-md ${selectedStatusFilter === 'declined'
-
-                                ? 'bg-red-100 border-red-400 ring-2 ring-red-300'
-
-                                : 'bg-red-50 border-red-200 hover:bg-red-100'
-
-                              }`}
-
-                          >
-
-                            <div className="text-2xl font-bold text-red-600">{statusCounts.declined}</div>
-
-                            <div className="text-sm text-red-700 font-medium">Declined</div>
-
-                          </button>
-
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                          {chips.map((c) => (
+                            <button
+                              key={c.key}
+                              type="button"
+                              onClick={() => setSelectedStatusFilter(c.key)}
+                              className={`shrink-0 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm transition-colors ${selectedStatusFilter === c.key ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            >
+                              <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
+                              {c.label}
+                              <span className={`text-xs tabular-nums ${selectedStatusFilter === c.key ? 'text-gray-300' : 'text-gray-400'}`}>{c.count}</span>
+                            </button>
+                          ))}
                         </div>
-
                       );
-
                     })()}
-
                   </div>
 
 
@@ -6656,51 +6214,24 @@ const MyEventsPage: React.FC = () => {
 
                         return (
 
-                          <div key={index} className="bg-white rounded-xl border shadow-sm overflow-hidden">
-
-                            {/* Department Header */}
-
-                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-3 md:px-4 lg:px-6 py-3 md:py-4 border-b">
-
-                              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-
-                                <div className="flex items-center gap-2 md:gap-3">
-
-                                  <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-
-                                    <Building2 className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
-
-                                  </div>
-
-                                  <div>
-
-                                    <h4 className="text-base md:text-lg font-semibold text-gray-900">{dept}</h4>
-
-                                    <p className="text-xs md:text-sm text-gray-600">
-
-                                      {Array.isArray(parsedRequirements) ? parsedRequirements.length : 0} Requirements
-
-                                    </p>
-
-                                  </div>
-
+                          <div key={index} className="space-y-3">
+                            <div className="flex items-center justify-between gap-3 px-1">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="h-8 w-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                  <Building2 className="w-4 h-4 text-gray-600" />
                                 </div>
-
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
-
-                                  Department
-
-                                </Badge>
-
+                                <h4 className="text-sm md:text-base font-semibold text-gray-900 truncate">{dept}</h4>
                               </div>
-
+                              <span className="text-xs text-gray-400 shrink-0">
+                                {Array.isArray(parsedRequirements) ? parsedRequirements.length : 0} requirement{Array.isArray(parsedRequirements) && parsedRequirements.length === 1 ? "" : "s"}
+                              </span>
                             </div>
 
 
 
                             {/* Requirements Grid */}
 
-                            <div className="p-3 md:p-4 lg:p-6">
+                            <div>
 
                               {Array.isArray(parsedRequirements) ? (
 
@@ -6728,7 +6259,7 @@ const MyEventsPage: React.FC = () => {
 
                                   return filteredRequirements.length > 0 ? (
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
 
                                       {filteredRequirements.map((req: any, reqIndex: number) => {
 
@@ -6736,7 +6267,7 @@ const MyEventsPage: React.FC = () => {
 
                                         return (
 
-                                          <div key={`${dept}-${req.id}-${req.name}`} className="bg-gray-50 rounded-lg border p-3 md:p-4 hover:shadow-md transition-all">
+                                          <div key={`${dept}-${req.id}-${req.name}`} className="bg-white rounded-xl border border-gray-100 p-4 hover:border-gray-200 transition-colors">
 
                                             {/* Requirement Header */}
 
@@ -6776,7 +6307,7 @@ const MyEventsPage: React.FC = () => {
 
                                                 <Button
 
-                                                  variant="outline"
+                                                  variant="ghost"
 
                                                   size="sm"
 
@@ -6784,7 +6315,7 @@ const MyEventsPage: React.FC = () => {
 
                                                   disabled={req.status?.toLowerCase() === 'confirmed'}
 
-                                                  className="h-7 px-2 gap-1 bg-white text-black border-gray-300 hover:bg-gray-100 hover:border-gray-400 text-[10px] md:text-xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                                  className="h-8 px-2 gap-1 border-transparent bg-transparent text-gray-600 hover:bg-gray-100 text-xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
 
                                                   title={req.status?.toLowerCase() === 'confirmed' ? "Cannot change department for confirmed requirements" : "Change Department"}
 
@@ -6806,23 +6337,23 @@ const MyEventsPage: React.FC = () => {
 
                                                   onClick={() => handleEditRequirement(req, selectedEventDepartments._id, dept)}
 
-                                                  className="h-7 px-2 gap-1 bg-black text-white border-gray-700 hover:bg-gray-800 hover:border-gray-600 hover:text-white text-[10px] md:text-xs whitespace-nowrap"
+                                                  className="h-8 px-2.5 gap-1 rounded-full bg-gray-900 text-white border-gray-900 hover:bg-gray-800 hover:text-white text-xs whitespace-nowrap"
 
                                                   title="Edit Quantity/Notes"
 
                                                 >
 
-                                                  <Edit className="w-3 h-3 md:w-3.5 md:h-3.5 text-white" />
+                                                  <Edit className="w-3 h-3 md:w-3.5 md:h-3.5" />
 
-                                                  <span className="hidden sm:inline text-white">Quantity/Notes</span>
+                                                  <span className="hidden sm:inline ">Quantity/Notes</span>
 
-                                                  <span className="sm:hidden text-white">Edit</span>
+                                                  <span className="sm:hidden ">Edit</span>
 
                                                 </Button>
 
                                                 <Button
 
-                                                  variant="outline"
+                                                  variant="ghost"
 
                                                   size="sm"
 
@@ -6830,7 +6361,7 @@ const MyEventsPage: React.FC = () => {
 
                                                   disabled={req.status?.toLowerCase() === 'confirmed'}
 
-                                                  className="h-7 px-2 gap-1 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 text-[10px] md:text-xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                                                  className="h-8 px-2 gap-1 border-transparent bg-transparent text-red-500 hover:bg-red-50 hover:text-red-600 text-xs whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
 
                                                   title={req.status?.toLowerCase() === 'confirmed' ? "Cannot delete confirmed requirements" : "Delete Requirement"}
 
@@ -6864,7 +6395,7 @@ const MyEventsPage: React.FC = () => {
 
                                               {req.type === 'physical' && req.quantity ? (
 
-                                                <div className="text-sm text-gray-600 bg-white rounded p-2">
+                                                <div className="text-sm text-gray-600">
 
                                                   {(() => {
 
@@ -6918,7 +6449,7 @@ const MyEventsPage: React.FC = () => {
 
                                               ) : req.type === 'yesno' && req.yesNoAnswer ? (
 
-                                                <div className="text-sm text-gray-600 bg-white rounded p-2">
+                                                <div className="text-sm text-gray-600">
 
                                                   <span className="font-medium">Answer:</span> <span className="text-green-600 font-semibold">âœ“ Yes</span>
 
@@ -6926,7 +6457,7 @@ const MyEventsPage: React.FC = () => {
 
                                               ) : req.notes ? (
 
-                                                <div className="text-sm text-gray-600 bg-white rounded p-2">
+                                                <div className="text-sm text-gray-600">
 
                                                   <span className="font-medium">Notes:</span> {req.notes}
 
@@ -6940,9 +6471,9 @@ const MyEventsPage: React.FC = () => {
 
                                               {req.departmentNotes && (
 
-                                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                                                <div className="bg-gray-50 rounded-xl p-3 space-y-2">
 
-                                                  <div className="text-xs font-medium text-blue-800 flex items-center gap-1">
+                                                  <div className="text-xs font-medium text-gray-500 flex items-center gap-1">
 
                                                     <FileText className="w-3 h-3" />
 
@@ -6950,7 +6481,7 @@ const MyEventsPage: React.FC = () => {
 
                                                   </div>
 
-                                                  <div className="text-sm text-blue-900 whitespace-pre-wrap">
+                                                  <div className="text-sm text-gray-800 whitespace-pre-wrap">
 
                                                     {req.departmentNotes}
 
@@ -6960,9 +6491,9 @@ const MyEventsPage: React.FC = () => {
 
                                                   {/* Replies Thread */}
 
-                                                  <div className="pt-2 border-t border-blue-100 space-y-2">
+                                                  <div className="pt-2 border-t border-gray-200 space-y-2">
 
-                                                    <Label className="text-[11px] font-medium text-blue-900 flex items-center gap-1">
+                                                    <Label className="text-[11px] font-medium text-gray-700 flex items-center gap-1">
 
                                                       <MessageSquare className="w-3 h-3" />
 
@@ -6974,7 +6505,7 @@ const MyEventsPage: React.FC = () => {
 
                                                     {/* Conversation card with messages + input */}
 
-                                                    <div className="bg-white/80 rounded-md border border-blue-100 min-h-[180px] max-h-60 flex flex-col px-2 py-2 text-xs">
+                                                    <div className="bg-white rounded-lg border border-gray-100 min-h-[180px] max-h-60 flex flex-col px-2 py-2 text-xs">
 
                                                       {/* Scrollable messages */}
 
@@ -6996,7 +6527,7 @@ const MyEventsPage: React.FC = () => {
 
                                                                 className={`max-w-[80%] rounded-lg px-2 py-1.5 shadow-sm border text-[11px] whitespace-pre-wrap ${reply.role === 'requestor'
 
-                                                                    ? 'bg-blue-600 text-white border-blue-700'
+                                                                    ? 'bg-gray-900 text-white border-gray-900'
 
                                                                     : 'bg-gray-100 text-gray-900 border-gray-200'
 
@@ -7060,7 +6591,7 @@ const MyEventsPage: React.FC = () => {
 
                                                           <Input
 
-                                                            className="text-xs bg-white/90 border-blue-200 focus-visible:ring-blue-500 flex-1 h-8"
+                                                            className="text-xs bg-white border-gray-200 focus-visible:ring-gray-300 flex-1 h-8"
 
                                                             placeholder="Type your reply to this department..."
 
@@ -7086,7 +6617,7 @@ const MyEventsPage: React.FC = () => {
 
                                                             size="sm"
 
-                                                            className="h-8 px-3 text-[11px] bg-blue-600 hover:bg-blue-700 whitespace-nowrap"
+                                                            className="h-8 px-3 text-[11px] bg-gray-900 hover:bg-gray-800 rounded-full whitespace-nowrap"
 
                                                             disabled={!requirementReplyDrafts[req.id]?.trim()}
 
@@ -7204,7 +6735,7 @@ const MyEventsPage: React.FC = () => {
 
                                               {req.status?.toLowerCase() === 'declined' && req.declineReason && (
 
-                                                <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                                <div className="mt-3 p-3 bg-red-50 rounded-xl">
 
                                                   <div className="flex items-start gap-2">
 
@@ -7362,24 +6893,10 @@ const MyEventsPage: React.FC = () => {
 
             {/* Footer */}
 
-            <div className="border-t bg-gray-50 px-6 py-4">
-
-              <div className="flex justify-end">
-
-                <Button
-
-                  onClick={() => setShowDepartmentsModal(false)}
-
-                  className="px-6"
-
-                >
-
-                  Close
-
-                </Button>
-
-              </div>
-
+            <div className="border-t border-gray-100 px-5 md:px-7 py-3 flex justify-end flex-shrink-0">
+              <Button variant="outline" onClick={() => setShowDepartmentsModal(false)} className="rounded-full px-6">
+                Close
+              </Button>
             </div>
 
           </div>
@@ -7396,17 +6913,17 @@ const MyEventsPage: React.FC = () => {
 
       <Dialog open={showFilesModal} onOpenChange={setShowFilesModal}>
 
-        <DialogContent className="max-w-3xl w-[75vw] max-h-[80vh] overflow-y-auto p-5">
+        <DialogContent className="w-[calc(100vw-1.5rem)] sm:w-full max-w-xl max-h-[90vh] overflow-y-auto p-5 sm:p-7 rounded-2xl">
 
-          <DialogHeader className="pb-4">
+          <DialogHeader className="pb-5 text-left pr-8">
 
-            <DialogTitle className="text-xl font-medium text-gray-900">
+            <DialogTitle className="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900">
 
               Event Files
 
             </DialogTitle>
 
-            <DialogDescription className="text-sm text-gray-600">
+            <DialogDescription className="text-sm text-gray-500">
 
               All attachments and government files for this event
 
@@ -7426,7 +6943,7 @@ const MyEventsPage: React.FC = () => {
 
                 <div>
 
-                  <h4 className="text-base font-medium text-gray-800 mb-3 flex items-center gap-2">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2">
 
                     <Paperclip className="w-4 h-4" />
 
@@ -7438,13 +6955,13 @@ const MyEventsPage: React.FC = () => {
 
                     {selectedEventFiles.attachments.map((attachment: any, index: number) => (
 
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+                      <div key={index} className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
 
                         <div className="flex items-center gap-3 min-w-0 pr-4">
 
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 shrink-0 bg-gray-100 rounded-lg flex items-center justify-center">
 
-                            <FileText className="w-5 h-5 text-blue-600" />
+                            <FileText className="w-5 h-5 text-gray-600" />
 
                           </div>
 
@@ -7452,7 +6969,7 @@ const MyEventsPage: React.FC = () => {
 
                             <p
 
-                              className="text-sm font-medium text-gray-900 truncate max-w-[150px] sm:max-w-[180px] lg:max-w-[220px]"
+                              className="text-sm font-medium text-gray-900 truncate max-w-[200px] sm:max-w-[260px]"
 
                               title={attachment.originalName}
 
@@ -7464,7 +6981,7 @@ const MyEventsPage: React.FC = () => {
 
                             <p className="text-xs text-gray-500">
 
-                              {formatMimeType(attachment.mimetype)}  {(attachment.size / 1024).toFixed(1)} KB
+                              {formatMimeType(attachment.mimetype)} · {(attachment.size / 1024).toFixed(1)} KB
 
                             </p>
 
@@ -7486,11 +7003,11 @@ const MyEventsPage: React.FC = () => {
 
                             }}
 
-                            className="gap-1"
+                            className="gap-1.5 h-8 rounded-full text-xs"
 
                           >
 
-                            <Eye className="w-3 h-3" />
+                            <Eye className="w-3.5 h-3.5" />
 
                             View
 
@@ -7508,11 +7025,11 @@ const MyEventsPage: React.FC = () => {
 
                             }}
 
-                            className="gap-1"
+                            className="gap-1.5 h-8 rounded-full text-xs"
 
                           >
 
-                            <Download className="w-3 h-3" />
+                            <Download className="w-3.5 h-3.5" />
 
                             Download
 
@@ -7544,7 +7061,7 @@ const MyEventsPage: React.FC = () => {
 
                   <div>
 
-                    <h4 className="text-base font-medium text-gray-800 mb-3 flex items-center gap-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2">
 
                       <Building2 className="w-4 h-4" />
 
@@ -7558,13 +7075,13 @@ const MyEventsPage: React.FC = () => {
 
                       {selectedEventFiles.govFiles.brieferTemplate && (
 
-                        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
 
                           <div className="flex items-center gap-3 min-w-0 pr-4">
 
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 shrink-0 bg-emerald-50 rounded-lg flex items-center justify-center">
 
-                              <FileText className="w-5 h-5 text-green-600" />
+                              <FileText className="w-5 h-5 text-emerald-600" />
 
                             </div>
 
@@ -7572,7 +7089,7 @@ const MyEventsPage: React.FC = () => {
 
                               <p
 
-                                className="text-sm font-medium text-gray-900 truncate max-w-[190px] sm:max-w-[220px] lg:max-w-[260px]"
+                                className="text-sm font-medium text-gray-900 truncate max-w-[200px] sm:max-w-[260px]"
 
                                 title={selectedEventFiles.govFiles.brieferTemplate.originalName}
 
@@ -7584,11 +7101,11 @@ const MyEventsPage: React.FC = () => {
 
                               <p className="text-xs text-gray-500">
 
-                                {formatMimeType(selectedEventFiles.govFiles.brieferTemplate.mimetype)}  {(selectedEventFiles.govFiles.brieferTemplate.size / 1024).toFixed(1)} KB
+                                {formatMimeType(selectedEventFiles.govFiles.brieferTemplate.mimetype)} · {(selectedEventFiles.govFiles.brieferTemplate.size / 1024).toFixed(1)} KB
 
                               </p>
 
-                              <p className="text-xs text-green-600 font-medium">Event Briefer</p>
+                              <p className="text-[11px] text-emerald-600 font-medium">Event Briefer</p>
 
                             </div>
 
@@ -7636,11 +7153,11 @@ const MyEventsPage: React.FC = () => {
 
                               }}
 
-                              className="gap-1"
+                              className="gap-1.5 h-8 rounded-full text-xs"
 
                             >
 
-                              <Eye className="w-3 h-3" />
+                              <Eye className="w-3.5 h-3.5" />
 
                               View
 
@@ -7686,11 +7203,11 @@ const MyEventsPage: React.FC = () => {
 
                               }}
 
-                              className="gap-1"
+                              className="gap-1.5 h-8 rounded-full text-xs"
 
                             >
 
-                              <Download className="w-3 h-3" />
+                              <Download className="w-3.5 h-3.5" />
 
                               Download
 
@@ -7708,13 +7225,13 @@ const MyEventsPage: React.FC = () => {
 
                       {selectedEventFiles.govFiles.programme && (
 
-                        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors">
 
                           <div className="flex items-center gap-3 min-w-0">
 
-                            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 shrink-0 bg-emerald-50 rounded-lg flex items-center justify-center">
 
-                              <FileText className="w-5 h-5 text-green-600" />
+                              <FileText className="w-5 h-5 text-emerald-600" />
 
                             </div>
 
@@ -7722,7 +7239,7 @@ const MyEventsPage: React.FC = () => {
 
                               <p
 
-                                className="text-sm font-medium text-gray-900 truncate max-w-[190px] sm:max-w-[220px] lg:max-w-[260px]"
+                                className="text-sm font-medium text-gray-900 truncate max-w-[200px] sm:max-w-[260px]"
 
                                 title={selectedEventFiles.govFiles.programme.originalName}
 
@@ -7734,11 +7251,11 @@ const MyEventsPage: React.FC = () => {
 
                               <p className="text-xs text-gray-500">
 
-                                {formatMimeType(selectedEventFiles.govFiles.programme.mimetype)}  {(selectedEventFiles.govFiles.programme.size / 1024).toFixed(1)} KB
+                                {formatMimeType(selectedEventFiles.govFiles.programme.mimetype)} · {(selectedEventFiles.govFiles.programme.size / 1024).toFixed(1)} KB
 
                               </p>
 
-                              <p className="text-xs text-green-600 font-medium">Program Flow</p>
+                              <p className="text-[11px] text-emerald-600 font-medium">Program Flow</p>
 
                             </div>
 
@@ -7758,11 +7275,11 @@ const MyEventsPage: React.FC = () => {
 
                               }}
 
-                              className="gap-1"
+                              className="gap-1.5 h-8 rounded-full text-xs"
 
                             >
 
-                              <Eye className="w-3 h-3" />
+                              <Eye className="w-3.5 h-3.5" />
 
                               View
 
@@ -7780,11 +7297,11 @@ const MyEventsPage: React.FC = () => {
 
                               }}
 
-                              className="gap-1"
+                              className="gap-1.5 h-8 rounded-full text-xs"
 
                             >
 
-                              <Download className="w-3 h-3" />
+                              <Download className="w-3.5 h-3.5" />
 
                               Download
 
@@ -7814,9 +7331,9 @@ const MyEventsPage: React.FC = () => {
 
                     !selectedEventFiles.govFiles.programme)) && (
 
-                  <div className="text-center py-8">
+                  <div className="text-center py-10">
 
-                    <Paperclip className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <Paperclip className="w-10 h-10 text-gray-300 mx-auto mb-3" />
 
                     <h3 className="text-lg font-medium text-gray-900 mb-2">No Files Attached</h3>
 
@@ -7832,7 +7349,7 @@ const MyEventsPage: React.FC = () => {
 
 
 
-          <div className="flex justify-center pt-4 mt-6">
+          <div className="flex justify-end pt-4 mt-6 border-t border-gray-100">
 
             <Button
 
@@ -7840,7 +7357,7 @@ const MyEventsPage: React.FC = () => {
 
               variant="outline"
 
-              className="px-6 py-2"
+              className="rounded-full px-6"
 
             >
 
